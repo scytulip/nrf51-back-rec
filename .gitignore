@@ -12,3 +12,5 @@
 *.lnp
 *.bak
 *.Vishwas
+
+arm/_build/
