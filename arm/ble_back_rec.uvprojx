@@ -529,6 +529,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_srv_common.c</FilePath>
             </File>
+            <File>
+              <FileName>ble_nus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ble_nus.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1118,6 +1123,11 @@
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_srv_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_nus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ble_nus.c</FilePath>
             </File>
           </Files>
         </Group>

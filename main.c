@@ -36,6 +36,7 @@
 #include "ble_srv_common.h"
 #include "ble_advdata.h"
 #include "ble_conn_params.h"
+#include "ble_nus.h"
 #include "boards.h"
 #include "app_scheduler.h"
 #include "softdevice_handler.h"
@@ -56,7 +57,7 @@
 #define ADVERTISING_LED_PIN_NO          LED_0                                       /**< Is on when device is advertising. */
 #define CONNECTED_LED_PIN_NO            LED_1                                       /**< Is on when device has connected. */
 
-#define DEVICE_NAME                     "Nordic_Template"                           /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Background Recording"                           /**< Name of device. Will be included in the advertising data. */
 
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      180                                         /**< The advertising timeout (in units of seconds). */
@@ -202,24 +203,25 @@ static void gap_params_init(void)
     ble_gap_conn_params_t   gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
 
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode); // Open link
 
     err_code = sd_ble_gap_device_name_set(&sec_mode,
                                           (const uint8_t *)DEVICE_NAME,
                                           strlen(DEVICE_NAME));
     APP_ERROR_CHECK(err_code);
 
-    /* YOUR_JOB: Use an appearance value matching the application's use case.
-    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_);
-    APP_ERROR_CHECK(err_code); */
-
+    /* YOUR_JOB: Use an appearance value matching the application's use case. */
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
+    APP_ERROR_CHECK(err_code); 
+																					
+		/* Set GAP Peripheral Preferred Connection Parameters. */
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
     gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
     gap_conn_params.max_conn_interval = MAX_CONN_INTERVAL;
     gap_conn_params.slave_latency     = SLAVE_LATENCY;
     gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
-
+		
     err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
     APP_ERROR_CHECK(err_code);
 }
@@ -234,10 +236,21 @@ static void advertising_init(void)
 {
     uint32_t      err_code;
     ble_advdata_t advdata;
+	
+		/* In Limited Discoverable Mode, the device is only in Discoverable Mode
+				long enough for a device to pair up with it then goes back to Non-Discoverable Mode. */
+	
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
     // YOUR_JOB: Use UUIDs for service(s) used in your application.
-    ble_uuid_t adv_uuids[] = {{BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE}};
+    ble_uuid_t adv_uuids[] = 
+		{
+			{BLE_UUID_IMMEDIATE_ALERT_SERVICE, BLE_UUID_TYPE_BLE},
+			{BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
+			{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE},
+			{BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE}
+			
+		};
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
@@ -602,7 +615,9 @@ int main(void)
     buttons_init();
     ble_stack_init();
     scheduler_init();    
-    gap_params_init();
+    
+		// BLE Initilization
+		gap_params_init();
     advertising_init();
     services_init();
     conn_params_init();

@@ -13684,6 +13684,133 @@ void ble_conn_params_on_ble_evt(ble_evt_t * p_ble_evt);
 
  
 #line 39 "..\\main.c"
+#line 1 "..\\ble_nus.h"
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+#line 36 "..\\ble_nus.h"
+#line 37 "..\\ble_nus.h"
+#line 38 "..\\ble_nus.h"
+#line 39 "..\\ble_nus.h"
+
+
+
+
+
+
+
+
+
+
+
+typedef struct ble_nus_s ble_nus_t;
+
+ 
+typedef void (*ble_nus_data_handler_t) (ble_nus_t * p_nus, uint8_t * data, uint16_t length);
+
+
+
+
+
+
+ 
+typedef struct
+{
+    ble_nus_data_handler_t   data_handler;             
+} ble_nus_init_t;
+
+
+
+
+ 
+typedef struct ble_nus_s
+{
+    uint8_t                  uuid_type;                
+    uint16_t                 service_handle;           
+    ble_gatts_char_handles_t tx_handles;               
+    ble_gatts_char_handles_t rx_handles;               
+    uint16_t                 conn_handle;              
+    _Bool                     is_notification_enabled;  
+    ble_nus_data_handler_t   data_handler;             
+} ble_nus_t;
+
+
+
+
+
+
+
+
+
+
+
+ 
+uint32_t ble_nus_init(ble_nus_t * p_nus, const ble_nus_init_t * p_nus_init);
+
+
+
+
+
+
+
+
+
+
+ 
+void ble_nus_on_ble_evt(ble_nus_t * p_nus, ble_evt_t * p_ble_evt);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+uint32_t ble_nus_send_string(ble_nus_t * p_nus, uint8_t * string, uint16_t length);
+
+
+
+ 
+#line 40 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\boards.h"
 
 
@@ -13783,7 +13910,7 @@ void ble_conn_params_on_ble_evt(ble_evt_t * p_ble_evt);
 
 
 
-#line 40 "..\\main.c"
+#line 41 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\app_common\\app_scheduler.h"
 
 
@@ -13912,7 +14039,7 @@ uint32_t app_sched_event_put(void *                    p_event_data,
 
 
  
-#line 41 "..\\main.c"
+#line 42 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\sd_common\\softdevice_handler.h"
 
 
@@ -16107,7 +16234,7 @@ static __inline uint32_t softdevice_evt_schedule(void)
 
 
  
-#line 42 "..\\main.c"
+#line 43 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\app_common\\app_timer.h"
 
 
@@ -17249,7 +17376,7 @@ static __inline uint32_t app_timer_evt_schedule(app_timer_timeout_handler_t time
 
 
  
-#line 43 "..\\main.c"
+#line 44 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\ble\\ble_error_log.h"
 
 
@@ -17463,7 +17590,7 @@ uint32_t ble_error_log_write(uint32_t err_code, const uint8_t * p_message, uint1
 
 
  
-#line 44 "..\\main.c"
+#line 45 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\app_common\\app_gpiote.h"
 
 
@@ -17678,7 +17805,7 @@ uint32_t app_gpiote_disable_interrupts(void);
 
 
  
-#line 45 "..\\main.c"
+#line 46 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\app_common\\app_button.h"
 
 
@@ -17860,7 +17987,7 @@ static __inline uint32_t app_button_evt_schedule(app_button_handler_t button_han
 
 
  
-#line 46 "..\\main.c"
+#line 47 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\ble\\ble_debug_assert_handler.h"
 
 
@@ -17909,7 +18036,7 @@ static __inline uint32_t app_button_evt_schedule(app_button_handler_t button_han
  
 void ble_debug_assert_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name);
 
-#line 47 "..\\main.c"
+#line 48 "..\\main.c"
 #line 1 "..\\..\\..\\..\\..\\Include\\app_common\\pstorage.h"
 
 
@@ -18270,7 +18397,7 @@ uint32_t pstorage_access_status_get(uint32_t * p_count);
 
 
 
-#line 48 "..\\main.c"
+#line 49 "..\\main.c"
 
 
 
@@ -18292,13 +18419,13 @@ uint32_t pstorage_access_status_get(uint32_t * p_count);
 
 
 
-#line 76 "..\\main.c"
+#line 77 "..\\main.c"
 
 
 
 
 
-#line 88 "..\\main.c"
+#line 89 "..\\main.c"
 
 
 
@@ -18394,7 +18521,7 @@ static void leds_init(void)
 static void timers_init(void)
 {
     
-    do { static uint32_t APP_TIMER_BUF[((((( (((2)) * 40) + ( 3 * (8 + (((4) + 1) + 1) * 24) ) )) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_timer_init((0), (2), (4) + 1, APP_TIMER_BUF, (1) ? app_timer_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 183, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
+    do { static uint32_t APP_TIMER_BUF[((((( (((2)) * 40) + ( 3 * (8 + (((4) + 1) + 1) * 24) ) )) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_timer_init((0), (2), (4) + 1, APP_TIMER_BUF, (1) ? app_timer_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 184, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
 
     
 
@@ -18416,26 +18543,27 @@ static void gap_params_init(void)
     ble_gap_conn_params_t   gap_conn_params;
     ble_gap_conn_sec_mode_t sec_mode;
 
-    do {(&sec_mode)->sm = 1; (&sec_mode)->lv = 1;} while(0);
+    do {(&sec_mode)->sm = 1; (&sec_mode)->lv = 1;} while(0); 
 
     err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)"Nordic_Template",
-                                          strlen("Nordic_Template"));
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 210, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+                                          (const uint8_t *)"Background Recording",
+                                          strlen("Background Recording"));
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 211, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 
-    
-
- 
-
+     
+    err_code = sd_ble_gap_appearance_set(0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 215, (uint8_t*) "..\\main.c"); } while (0); } } while (0); 
+																					
+		 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
     gap_conn_params.min_conn_interval = (((500) * 1000) / (UNIT_1_25_MS));
     gap_conn_params.max_conn_interval = (((1000) * 1000) / (UNIT_1_25_MS));
     gap_conn_params.slave_latency     = 0;
     gap_conn_params.conn_sup_timeout  = (((4000) * 1000) / (UNIT_10_MS));
-
+		
     err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 224, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 226, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 }
 
 
@@ -18448,10 +18576,21 @@ static void advertising_init(void)
 {
     uint32_t      err_code;
     ble_advdata_t advdata;
+	
+		
+ 
+	
     uint8_t       flags = ((0x01) | (0x04));
 
     
-    ble_uuid_t adv_uuids[] = {{0x180F, 0x01}};
+    ble_uuid_t adv_uuids[] = 
+		{
+			{0x1802, 0x01},
+			{0x180F, 0x01},
+			{0x180A, 0x01},
+			{0x0001, 0x01}
+			
+		};
 
     
     memset(&advdata, 0, sizeof(advdata));
@@ -18464,7 +18603,7 @@ static void advertising_init(void)
     advdata.uuids_complete.p_uuids  = adv_uuids;
 
     err_code = ble_advdata_set(&advdata, 0);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 253, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 266, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 }
 
 
@@ -18507,7 +18646,7 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
     if(p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
         err_code = sd_ble_gap_disconnect(m_conn_handle, 0x3B);
-        do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 296, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+        do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 309, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
     }
 }
 
@@ -18518,7 +18657,7 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
  
 static void conn_params_error_handler(uint32_t nrf_error)
 {
-    do { app_error_handler((nrf_error), 307, (uint8_t*) "..\\main.c"); } while (0);
+    do { app_error_handler((nrf_error), 320, (uint8_t*) "..\\main.c"); } while (0);
 }
 
 
@@ -18541,7 +18680,7 @@ static void conn_params_init(void)
     cp_init.error_handler                  = conn_params_error_handler;
 
     err_code = ble_conn_params_init(&cp_init);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 330, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 343, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 }
 
 
@@ -18574,7 +18713,7 @@ static void advertising_start(void)
     adv_params.timeout     = 180;
 
     err_code = sd_ble_gap_adv_start(&adv_params);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 363, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 376, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
     nrf_gpio_pin_set(18);
 }
 
@@ -18625,12 +18764,12 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
                                                    0x00,
                                                    &m_sec_params);
-            do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 414, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+            do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 427, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, 0, 0);
-            do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 419, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+            do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 432, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
             break;
 
         case BLE_GAP_EVT_AUTH_STATUS:
@@ -18642,13 +18781,13 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             if (p_enc_info->div == p_ble_evt->evt.gap_evt.params.sec_info_request.div)
             {
                 err_code = sd_ble_gap_sec_info_reply(m_conn_handle, p_enc_info, 0);
-                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 431, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 444, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
             }
             else
             {
                 
                 err_code = sd_ble_gap_sec_info_reply(m_conn_handle, 0, 0);
-                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 437, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 450, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
             }
             break;
 
@@ -18664,7 +18803,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                 
                 
                 err_code = sd_power_system_off();
-                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 453, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+                do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 466, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
             }
             break;
 
@@ -18715,22 +18854,22 @@ static void ble_stack_init(void)
     uint32_t err_code;
 
     
-    do { static uint32_t EVT_BUFFER[(((((((((sizeof(ble_evt_t) + (23))) < (0) ? (0) : ((sizeof(ble_evt_t) + (23))))) < (sizeof(uint32_t)) ? (sizeof(uint32_t)) : ((((sizeof(ble_evt_t) + (23))) < (0) ? (0) : ((sizeof(ble_evt_t) + (23))))))) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE; ERR_CODE = softdevice_handler_init((NRF_CLOCK_LFCLKSRC_XTAL_20_PPM), EVT_BUFFER, sizeof(EVT_BUFFER), (0) ? softdevice_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 504, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
+    do { static uint32_t EVT_BUFFER[(((((((((sizeof(ble_evt_t) + (23))) < (0) ? (0) : ((sizeof(ble_evt_t) + (23))))) < (sizeof(uint32_t)) ? (sizeof(uint32_t)) : ((((sizeof(ble_evt_t) + (23))) < (0) ? (0) : ((sizeof(ble_evt_t) + (23))))))) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE; ERR_CODE = softdevice_handler_init((NRF_CLOCK_LFCLKSRC_XTAL_20_PPM), EVT_BUFFER, sizeof(EVT_BUFFER), (0) ? softdevice_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 517, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
 
     
     ble_enable_params_t ble_enable_params;
     memset(&ble_enable_params, 0, sizeof(ble_enable_params));
     ble_enable_params.gatts_enable_params.service_changed = 0;
     err_code = sd_ble_enable(&ble_enable_params);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 511, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 524, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 
     
     err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 515, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 528, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
     
     
     err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 519, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 532, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 }
 
 
@@ -18738,7 +18877,7 @@ static void ble_stack_init(void)
  
 static void scheduler_init(void)
 {
-    do { static uint32_t APP_SCHED_BUF[((((((((sizeof(app_timer_event_t))) + 8) * (((10)) + 1))) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_sched_init((sizeof(app_timer_event_t)), (10), APP_SCHED_BUF); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 527, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
+    do { static uint32_t APP_SCHED_BUF[((((((((sizeof(app_timer_event_t))) + 8) * (((10)) + 1))) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_sched_init((sizeof(app_timer_event_t)), (10), APP_SCHED_BUF); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 540, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
 }
 
 
@@ -18771,7 +18910,7 @@ static void scheduler_init(void)
  
 static void gpiote_init(void)
 {
-    do { static uint32_t app_gpiote_buf[((((((1) * 20)) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_gpiote_init((1), app_gpiote_buf); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 560, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
+    do { static uint32_t app_gpiote_buf[((((((1) * 20)) - 1) / (sizeof(uint32_t))) + 1)]; uint32_t ERR_CODE = app_gpiote_init((1), app_gpiote_buf); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 573, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
 }
 
 
@@ -18788,7 +18927,7 @@ static void buttons_init(void)
         
     };
 
-    do { uint32_t ERR_CODE = app_button_init((buttons), (sizeof(buttons) / sizeof(buttons[0])), (((uint32_t)((((50) * (uint64_t)32768) + ((((0) + 1) * 1000) / 2)) / (((0) + 1) * 1000)))), (1) ? app_button_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 577, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
+    do { uint32_t ERR_CODE = app_button_init((buttons), (sizeof(buttons) / sizeof(buttons[0])), (((uint32_t)((((50) * (uint64_t)32768) + ((((0) + 1) * 1000) / 2)) / (((0) + 1) * 1000)))), (1) ? app_button_evt_schedule : 0); do { const uint32_t LOCAL_ERR_CODE = (ERR_CODE); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 590, (uint8_t*) "..\\main.c"); } while (0); } } while (0); } while (0);
 
     
     
@@ -18801,7 +18940,7 @@ static void buttons_init(void)
 static void power_manage(void)
 {
     uint32_t err_code = sd_app_evt_wait();
-    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 590, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
+    do { const uint32_t LOCAL_ERR_CODE = (err_code); if (LOCAL_ERR_CODE != ((0x0) + 0)) { do { app_error_handler((LOCAL_ERR_CODE), 603, (uint8_t*) "..\\main.c"); } while (0); } } while (0);
 }
 
 
@@ -18816,7 +18955,9 @@ int main(void)
     buttons_init();
     ble_stack_init();
     scheduler_init();    
-    gap_params_init();
+    
+		
+		gap_params_init();
     advertising_init();
     services_init();
     conn_params_init();
