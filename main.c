@@ -57,7 +57,7 @@
 #define ADVERTISING_LED_PIN_NO          LED_0                                       /**< Is on when device is advertising. */
 #define CONNECTED_LED_PIN_NO            LED_1                                       /**< Is on when device has connected. */
 
-#define DEVICE_NAME                     "Background Recording"                           /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "BKG Record"                             /**< Name of device. Will be included in the advertising data. (CANNOT BE TOO LONG!)*/
 
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      180                                         /**< The advertising timeout (in units of seconds). */
@@ -168,7 +168,6 @@ static void leds_init(void)
 {
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-    // nrf_gpio_cfg_output(ASSERT_LED_PIN_NO);
 
     // YOUR_JOB: Add additional LED initialiazations if needed.
 }
@@ -211,7 +210,8 @@ static void gap_params_init(void)
     APP_ERROR_CHECK(err_code);
 
     /* YOUR_JOB: Use an appearance value matching the application's use case. */
-    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
+		err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HEART_RATE_SENSOR_HEART_RATE_BELT);
+    //err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
     APP_ERROR_CHECK(err_code); 
 																					
 		/* Set GAP Peripheral Preferred Connection Parameters. */
@@ -243,13 +243,20 @@ static void advertising_init(void)
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
     // YOUR_JOB: Use UUIDs for service(s) used in your application.
+		/* 
+			1. Immediate alert for life emergency event
+	    2. Battery service for monitoring battery usage
+			3. Pseudo heart rate service for real-time data report
+	    4. Device information service for general report
+			5. UART service for group data transfer
+		*/
     ble_uuid_t adv_uuids[] = 
 		{
-			{BLE_UUID_IMMEDIATE_ALERT_SERVICE, BLE_UUID_TYPE_BLE},
-			{BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
-			{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE},
-			{BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE}
-			
+			{BLE_UUID_IMMEDIATE_ALERT_SERVICE,				BLE_UUID_TYPE_BLE},		
+			{BLE_UUID_BATTERY_SERVICE, 								BLE_UUID_TYPE_BLE},		
+			{BLE_UUID_HEART_RATE_SERVICE,							BLE_UUID_TYPE_BLE},		
+			{BLE_UUID_DEVICE_INFORMATION_SERVICE, 		BLE_UUID_TYPE_BLE},		
+			{BLE_UUID_NUS_SERVICE, 										BLE_UUID_TYPE_BLE}		
 		};
 
     // Build and set advertising data
@@ -366,9 +373,9 @@ static void advertising_start(void)
     // Start advertising
     memset(&adv_params, 0, sizeof(adv_params));
 
-    adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
+    adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;	// Undirected advertisement.
     adv_params.p_peer_addr = NULL;
-    adv_params.fp          = BLE_GAP_ADV_FP_ANY;
+    adv_params.fp          = BLE_GAP_ADV_FP_ANY;				// Allow scan requests and connect requests from any device.
     adv_params.interval    = APP_ADV_INTERVAL;
     adv_params.timeout     = APP_ADV_TIMEOUT_IN_SECONDS;
 
@@ -514,7 +521,7 @@ static void ble_stack_init(void)
     uint32_t err_code;
 
     // Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, false);
+    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, false); // No use of scheduler
 
     // Enable BLE stack 
     ble_enable_params_t ble_enable_params;
@@ -613,20 +620,20 @@ int main(void)
     timers_init();
     gpiote_init();
     buttons_init();
-    ble_stack_init();
-    scheduler_init();    
-    
-		// BLE Initilization
+
+		ble_stack_init();
+		scheduler_init();
+	
 		gap_params_init();
     advertising_init();
-    services_init();
+    services_init();	
     conn_params_init();
     sec_params_init();
 
     // Start execution
     timers_start();
     advertising_start();
-
+	
     // Enter main loop
     for (;;)
     {
