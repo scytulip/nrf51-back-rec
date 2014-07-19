@@ -519,16 +519,16 @@
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>BLE_Services</GroupName>
+          <Files>
             <File>
               <FileName>bluetooth.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\bluetooth.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Services</GroupName>
-          <Files>
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
@@ -1119,16 +1119,16 @@
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>BLE_Services</GroupName>
+          <Files>
             <File>
               <FileName>bluetooth.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\bluetooth.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Services</GroupName>
-          <Files>
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>

@@ -12,10 +12,10 @@
 
 /** @file
  *
- * @defgroup ble_sdk_app_template_main main.c
+ * @defgroup ble_back_rec main.c
  * @{
- * @ingroup ble_sdk_app_template
- * @brief Template project main file.
+ * @ingroup ble_back_rec
+ * @brief Project main file.
  *
  * This file contains a template for creating a new application. It has the code necessary to wakeup
  * from button, advertise, get a connection restart advertising on disconnect and if no new
@@ -119,8 +119,6 @@ static void leds_init(void)
 {
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-
-    // YOUR_JOB: Add additional LED initialiazations if needed.
 }
 
 /**@brief Function for the Timer initialization.
@@ -139,7 +137,6 @@ static void timers_init(void)
     err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
     APP_ERROR_CHECK(err_code); */
 }
-
 
 /**@brief Function for starting timers.
 */
@@ -253,7 +250,3 @@ int main(void)
         power_manage();
     }
 }
-
-/**
- * @}
- */

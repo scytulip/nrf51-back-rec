@@ -1,5 +1,3 @@
-/* Bluetooth-related Functions */
-
 #include "common_def.h"
 #include "bluetooth.h"
 #include "nrf_gpio.h"

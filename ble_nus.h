@@ -12,9 +12,9 @@
 
 /**@file
  *
- * @defgroup ble_sdk_srv_nus Nordic UART Service - Experimental
+ * @defgroup proj_ble_nus Nordic UART Service - Experimental
  * @{
- * @ingroup  ble_sdk_srv
+ * @ingroup  proj_ble
  * @brief    Nordic UART Service implementation.
  *
  * @details  The Nordic UART Service is a simple GATT based service with a TX and RX

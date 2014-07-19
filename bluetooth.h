@@ -1,4 +1,10 @@
-/* Bluetooth Settings */
+/** @file
+	@defgroup proj_ble_common BLE SoftDevice Initilization
+  @{
+  @ingroup proj_ble
+  @brief Project BLE Initilization
+	@details This file constains functions initializing BLE operation.
+ */
 
 #include "common_def.h"
 #include "ble.h"
@@ -42,6 +48,7 @@
 static ble_gap_sec_params_t             m_sec_params;                               /**< Security requirements for this application. */
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
 
+
 /**@brief Function for initializing the BLE stack.
  *
  * @details Initializes the SoftDevice and the BLE event interrupt.
@@ -77,5 +84,7 @@ void conn_params_init(void);
 /**@brief Function for starting advertising.
  */
 void advertising_start(void);
+
+/** @} */
 
 #endif
