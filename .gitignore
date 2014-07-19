@@ -5,6 +5,8 @@
 *.tra
 *.dep
 *.__i
+*.i
+*.hex
 *.crf
 *.d
 *.o
@@ -14,3 +16,5 @@
 *.Vishwas
 
 arm/_build/
+*.Congyin*
+
