@@ -519,6 +519,11 @@
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
             </File>
+            <File>
+              <FileName>bluetooth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bluetooth.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1113,6 +1118,11 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>bluetooth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bluetooth.c</FilePath>
             </File>
           </Files>
         </Group>
