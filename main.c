@@ -249,4 +249,5 @@ int main(void)
         app_sched_execute();
         power_manage();
     }
+		
 }

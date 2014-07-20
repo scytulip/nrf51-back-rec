@@ -539,6 +539,11 @@
               <FileType>1</FileType>
               <FilePath>..\ble_nus.c</FilePath>
             </File>
+            <File>
+              <FileName>ble_bas.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ble_bas.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1138,6 +1143,11 @@
               <FileName>ble_nus.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ble_nus.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_bas.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ble_bas.c</FilePath>
             </File>
           </Files>
         </Group>

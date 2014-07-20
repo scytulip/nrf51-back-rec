@@ -1,4 +1,7 @@
 #include "common_def.h"
+
+#include "ble_bas.h"
+
 #include "bluetooth.h"
 #include "nrf_gpio.h"
 #include "pstorage.h"
@@ -47,7 +50,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             APP_ERROR_CHECK(err_code);
             */
             
-                advertising_start();
+            advertising_start();
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
@@ -143,8 +146,9 @@ static void conn_params_error_handler(uint32_t nrf_error)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
-    on_ble_evt(p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
+		on_ble_evt(p_ble_evt);    
+	
     /*
     YOUR_JOB: Add service ble_evt handlers calls here, like, for example:
     ble_bas_on_ble_evt(&m_bas, p_ble_evt);
