@@ -29,18 +29,13 @@
 
 #include "common_def.h"
 #include "bluetooth.h"
+#include "battery.h"
 
 #include "nordic_common.h"
 #include "nrf.h"
 #include "app_error.h"
-#include "nrf_gpio.h"
-#include "nrf51_bitfields.h"
-
 #include "boards.h"
 #include "app_scheduler.h"
-#include "app_timer.h"
-#include "app_gpiote.h"
-#include "app_button.h"
 #include "pstorage.h"
 
 
@@ -111,105 +106,12 @@ static void service_error_handler(uint32_t nrf_error)
     APP_ERROR_HANDLER(nrf_error);
 } */
 
-/**@brief Function for the LEDs initialization.
- *
- * @details Initializes all LEDs used by the application.
- */
-static void leds_init(void)
-{
-    nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
-    nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-}
-
-/**@brief Function for the Timer initialization.
- *
- * @details Initializes the timer module.
- */
-static void timers_init(void)
-{
-    // Initialize timer module, making it use the scheduler
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
-
-    /* YOUR_JOB: Create any timers to be used by the application.
-                 Below is an example of how to create a timer.
-                 For every new timer needed, increase the value of the macro APP_TIMER_MAX_TIMERS by
-                 one.
-    err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
-    APP_ERROR_CHECK(err_code); */
-}
-
-/**@brief Function for starting timers.
-*/
-static void timers_start(void)
-{
-    /* YOUR_JOB: Start your timers. below is an example of how to start a timer.
-    uint32_t err_code;
-
-    err_code = app_timer_start(m_app_timer_id, TIMER_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code); */
-}
-
 /**@brief Function for the Event Scheduler initialization.
  */
 static void scheduler_init(void)
 {
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
-
-/**@brief Function for handling a button event.
- *
- * @param[in]   pin_no         Pin that had an event happen.
- * @param[in]   button_event   APP_BUTTON_PUSH or APP_BUTTON_RELEASE.
- */
-/* YOUR_JOB: Uncomment this function if you need to handle button events.
-static void button_event_handler(uint8_t pin_no, uint8_t button_event)
-{
-    if (button_action == APP_BUTTON_PUSH)
-    {
-        switch (pin_no)
-        {
-            case MY_BUTTON_PIN:
-                // Code to handle MY_BUTTON keypresses
-                break;
-
-            // Handle any other buttons
-
-            default:
-                APP_ERROR_HANDLER(pin_no);
-                break;
-        }
-    }
-}
-*/
-
-/**@brief Function for initializing the GPIOTE handler module.
- */
-static void gpiote_init(void)
-{
-    APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
-}
-
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    // Note: Array must be static because a pointer to it will be saved in the Button handler
-    //       module.
-    static app_button_cfg_t buttons[] =
-    {
-        {WAKEUP_BUTTON_PIN, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, NULL},
-        // YOUR_JOB: Add other buttons to be used:
-        // {MY_BUTTON_PIN,     false, BUTTON_PULL, button_event_handler}
-    };
-
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
-
-    // Note: If the only use of buttons is to wake up, the app_button module can be omitted, and
-    //       the wakeup button can be configured by
-    // GPIO_WAKEUP_BUTTON_CONFIG(WAKEUP_BUTTON_PIN);
-}
-
 
 /**@brief Function for the Power manager.
  */
@@ -225,14 +127,17 @@ static void power_manage(void)
 int main(void)
 {
     // Initialize
-    leds_init();
+	  leds_init();
     timers_init();
     gpiote_init();
     buttons_init();
-
-		ble_stack_init();
-		scheduler_init();
+		adc_init();
 	
+		// Scheduler
+		scheduler_init();
+
+		// BLE Initialization
+		ble_stack_init();
 		gap_params_init();
     advertising_init();
     services_init();	

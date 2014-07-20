@@ -519,6 +519,16 @@
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
             </File>
+            <File>
+              <FileName>battery.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\battery.c</FilePath>
+            </File>
+            <File>
+              <FileName>common_def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\common_def.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -535,14 +545,14 @@
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_srv_common.c</FilePath>
             </File>
             <File>
+              <FileName>ble_bas.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
+            </File>
+            <File>
               <FileName>ble_nus.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ble_nus.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble_bas.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ble_bas.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1124,6 +1134,16 @@
               <FileType>1</FileType>
               <FilePath>.\..\main.c</FilePath>
             </File>
+            <File>
+              <FileName>battery.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\battery.c</FilePath>
+            </File>
+            <File>
+              <FileName>common_def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\common_def.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1140,14 +1160,14 @@
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_srv_common.c</FilePath>
             </File>
             <File>
+              <FileName>ble_bas.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
+            </File>
+            <File>
               <FileName>ble_nus.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ble_nus.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble_bas.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ble_bas.c</FilePath>
             </File>
           </Files>
         </Group>
