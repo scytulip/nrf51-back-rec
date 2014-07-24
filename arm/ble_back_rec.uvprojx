@@ -520,9 +520,14 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>interruption.c</FileName>
+              <FileName>bluetooth.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\interruption.c</FilePath>
+              <FilePath>..\bluetooth.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\adc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1130,9 +1135,14 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>interruption.c</FileName>
+              <FileName>bluetooth.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\interruption.c</FilePath>
+              <FilePath>..\bluetooth.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\adc.c</FilePath>
             </File>
           </Files>
         </Group>
