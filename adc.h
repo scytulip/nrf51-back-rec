@@ -13,5 +13,19 @@
 #define ADC_RESULT_IN_MILLI_VOLTS(ADC_VALUE)\
         ((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
 				
+
+
+void battery_level_meas_timeout_handler(void * p_context);
+				
+/**@brief Function for handling the ADC interrupt.
+ * @details  This function will fetch the conversion result from the ADC, convert the value into
+ *           percentage and send it to peer.
+ */
+void ADC_IRQHandler(void);
+
+/**@brief Function for initializing ADC operation
+ */
+void adc_init(void);
+				
 #endif
 
