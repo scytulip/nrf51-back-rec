@@ -32,6 +32,8 @@
 #include "nrf51.h"
 #include "nrf51_bitfields.h"
 
+#include "interruption.h"
+
 #include "ble.h"
 #include "ble_hci.h"
 #include "ble_srv_common.h"
@@ -95,17 +97,8 @@
 
 // BATTERY SERVICE
 #define BATTERY_LEVEL_MEAS_INTERVAL     APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER)  /**< Battery level measurement interval (ticks -> 2s). */
-#define ADC_REF_VOLTAGE_IN_MILLIVOLTS        1200                                      /**< Reference voltage (in milli volts) used by ADC while doing conversion. */
-#define ADC_PRE_SCALING_COMPENSATION         3                                         /**< The ADC is configured to use VDD with 1/3 prescaling as input. And hence the result of conversion is to be multiplied by 3 to get the actual value of the battery voltage.*/
-#define DIODE_FWD_VOLT_DROP_MILLIVOLTS       270                                       /**< Typical forward voltage drop of the diode (Part no: SD103ATW-7-F) that is connected in series with the voltage supply. This is the voltage drop when the forward current is 1mA. Source: Data sheet of 'SURFACE MOUNT SCHOTTKY BARRIER DIODE ARRAY' available at www.diodes.com. */
 
-/**@brief Macro to convert the result of ADC conversion in millivolts.
- *
- * @param[in]  ADC_VALUE   ADC result.
- * @retval     Result converted to millivolts.
- */
-#define ADC_RESULT_IN_MILLI_VOLTS(ADC_VALUE)\
-        ((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
+
 				
 // Global Variables
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
@@ -113,8 +106,7 @@ static dm_application_instance_t        m_app_handle;																/**< Applic
 static app_timer_id_t                   m_battery_timer_id;                         /**< Battery timer. */
 static ble_bas_t               					bas;           															/**< Structure used to identify the battery service. */
 
-// For Test
-static uint8_t	testv = 0;
+
 	
 #define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
@@ -130,6 +122,11 @@ static void timers_start(void);
 /*****************************************************************************
 * Event Handlers & Dispatches
 *****************************************************************************/
+
+void battery_level_update_handler(uint8_t percentage_batt_lvl)
+{
+		ble_bas_battery_level_update(&bas, percentage_batt_lvl);
+}
 
 static void battery_level_meas_timeout_handler(void * p_context)
 {
@@ -675,49 +672,7 @@ static void timers_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/*****************************************************************************
-* Interruption Handlers
-*****************************************************************************/
 
-/**@brief Function for handling the ADC interrupt.
- * @details  This function will fetch the conversion result from the ADC, convert the value into
- *           percentage and send it to peer.
- */
-void ADC_IRQHandler(void)
-{
-    if (NRF_ADC->EVENTS_END != 0)
-    {
-        uint8_t     adc_result;
-        uint16_t    batt_lvl_in_milli_volts;
-        uint8_t     percentage_batt_lvl;
-        uint32_t    err_code;
-
-        NRF_ADC->EVENTS_END     = 0;
-        adc_result              = NRF_ADC->RESULT;
-        NRF_ADC->TASKS_STOP     = 1;
-
-        batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
-                                  DIODE_FWD_VOLT_DROP_MILLIVOLTS;
-        percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
-			
-				percentage_batt_lvl	= (testv++) % 100;
-
-        err_code = ble_bas_battery_level_update(&bas, percentage_batt_lvl);
-			
-        if (
-            (err_code != NRF_SUCCESS)
-            &&
-            (err_code != NRF_ERROR_INVALID_STATE)
-            &&
-            (err_code != BLE_ERROR_NO_TX_BUFFERS)
-            &&
-            (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-        )
-        {
-            APP_ERROR_HANDLER(err_code);
-        }
-    }
-}
 
 /*********************************************************
 * Not Arranged

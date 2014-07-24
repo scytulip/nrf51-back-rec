@@ -520,20 +520,15 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>common_def.c</FileName>
+              <FileName>interruption.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\common_def.c</FilePath>
+              <FilePath>..\interruption.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BLE_Services</GroupName>
           <Files>
-            <File>
-              <FileName>bluetooth.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bluetooth.c</FilePath>
-            </File>
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
@@ -1135,20 +1130,15 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>common_def.c</FileName>
+              <FileName>interruption.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\common_def.c</FilePath>
+              <FilePath>..\interruption.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BLE_Services</GroupName>
           <Files>
-            <File>
-              <FileName>bluetooth.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bluetooth.c</FilePath>
-            </File>
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
