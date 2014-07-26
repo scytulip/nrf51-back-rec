@@ -534,6 +534,11 @@
               <FileType>1</FileType>
               <FilePath>.\timers.c</FilePath>
             </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\gpio.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -548,11 +553,6 @@
               <FileName>ble_bas.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble_nus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ble_nus.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1154,6 +1154,11 @@
               <FileType>1</FileType>
               <FilePath>.\timers.c</FilePath>
             </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\gpio.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1168,11 +1173,6 @@
               <FileName>ble_bas.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
-            </File>
-            <File>
-              <FileName>ble_nus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ble_nus.c</FilePath>
             </File>
           </Files>
         </Group>

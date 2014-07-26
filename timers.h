@@ -1,3 +1,11 @@
+/** @file
+ *
+ * @defgroup ble_back_rec_timer Timers Operations
+ * @{
+ * @ingroup ble_back_rec
+ * @brief Header for nrf51822 timers' setting, initilization and operation.
+ */
+
 #ifndef CUSTOM_TIMER_H__
 #define CUSTOM_TIMER_H__
 
@@ -20,3 +28,5 @@ void timers_init(void);
 void timers_start(void);
 
 #endif
+
+/** @} */

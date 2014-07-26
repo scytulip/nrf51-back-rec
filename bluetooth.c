@@ -10,8 +10,8 @@
 #include "ble_bas.h"
 #include "softdevice_handler.h"
 
-#include "main.h"
 #include "timers.h"
+#include "gpio.h"
 #include "bluetooth.h"
 
 // Global Variables
@@ -23,6 +23,10 @@ static dm_application_instance_t        m_app_handle;																/**< Applic
 * Event Handlers & Dispatches
 *****************************************************************************/
 
+/**@brief Function for updating battery level.
+ *
+ * @details This function is called in ADC_IRQHandler to update current battery level.
+ */
 void ble_bas_battery_level_update_handler(uint8_t percentage_batt_lvl)
 {
 		ble_bas_battery_level_update(&bas, percentage_batt_lvl);
@@ -210,7 +214,7 @@ void ble_stack_init(void)
     uint32_t err_code;
 
     // Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, false); // No use of scheduler
+    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
 
     // Enable BLE stack 
     ble_enable_params_t ble_enable_params;
@@ -454,3 +458,4 @@ void advertising_start(void)
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 }
 
+/** @} */

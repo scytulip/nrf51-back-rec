@@ -1,3 +1,14 @@
+/** @file
+ *
+ * @defgroup ble_back_rec_bluetooth Bluetooth Operation
+ * @{
+ * @ingroup ble_back_rec
+ * @brief Header for Bluetooth Operation
+ *
+ * This file contains functions and parameters for operating the nrf51822 BLE link.
+ */
+
+
 #ifndef CUSTOM_BLE_H__
 #define CUSTOM_BLE_H__
 
@@ -29,6 +40,10 @@
 #define SEC_PARAM_MIN_KEY_SIZE          7                                           /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                          /**< Maximum encryption key size. */
 
+/**@brief Function for updating battery level.
+ *
+ * @details This function is called in ADC_IRQHandler to update current battery level.
+ */
 void ble_bas_battery_level_update_handler(uint8_t percentage_batt_lvl);
 
 /**@brief Function for initializing the BLE stack.

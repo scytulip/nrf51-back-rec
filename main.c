@@ -30,63 +30,20 @@
 #include "main.h"
 #include "adc.h"
 #include "timers.h"
+#include "gpio.h"
 #include "bluetooth.h"
 
 #include "ble_debug_assert_handler.h"
 #include "softdevice_handler.h"
 #include "pstorage.h"
 
-#include "nrf_gpio.h"
-#include "app_gpiote.h"
-#include "app_button.h"
 #include "app_scheduler.h"
 #include "app_error.h"
 #include "boards.h"
-#include "app_util.h"
 
-/*****************************************************************************
-* Initilization Functions
-*****************************************************************************/
-
-/**@brief Function for the LEDs initialization.
- *
- * @details Initializes all LEDs used by the application.
- */
-static void leds_init(void)
-{
-    nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
-    nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-}
-
-/**@brief Function for initializing the GPIOTE handler module.
- */
-static void gpiote_init(void)
-{
-    APP_GPIOTE_INIT(APP_GPIOTE_MAX_USERS);
-}
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    // Note: Array must be static because a pointer to it will be saved in the Button handler
-    //       module.
-    static app_button_cfg_t buttons[] =
-    {
-        {WAKEUP_BUTTON_PIN, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, NULL},
-        // YOUR_JOB: Add other buttons to be used:
-        // {MY_BUTTON_PIN,     false, BUTTON_PULL, button_event_handler}
-    };
-
-    APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
-
-    // Note: If the only use of buttons is to wake up, the app_button module can be omitted, and
-    //       the wakeup button can be configured by
-    // GPIO_WAKEUP_BUTTON_CONFIG(WAKEUP_BUTTON_PIN);
-}
-
-// Persistent storage system event handler
-void pstorage_sys_event_handler (uint32_t p_evt);
+#define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
+#define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
+#define SCHED_QUEUE_SIZE                10                                          /**< Maximum number of events in the scheduler queue. */
 
 /**@brief Function for error handling, which is called when an error has occurred.
  *
@@ -108,6 +65,10 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
     //                The flash write will happen EVEN if the radio is active, thus interrupting
     //                any communication.
     //                Use with care. Un-comment the line below to use.
+	
+	nrf_gpio_pin_set(LED_0);
+	nrf_gpio_pin_set(LED_1);
+	
     ble_debug_assert_handler(error_code, line_num, p_file_name);
 
     // On assert, the system can only recover with a reset.
@@ -134,7 +95,7 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 static void scheduler_init(void)
 {
-    //APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
+    APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
 
 /**@brief Function for application main entry.
@@ -142,29 +103,29 @@ static void scheduler_init(void)
 int main(void)
 {
 	
-		uint32_t err_code;
+	uint32_t err_code;
 	
-    // Initialize
-	  leds_init();
-    timers_init();
-    gpiote_init();
-    buttons_init();
-		adc_init();
-	
-		// Initialize persistent storage module.
+	// Initialize persistent storage module.
     err_code = pstorage_init();
     APP_ERROR_CHECK(err_code);
 	
-		// BLE Initialization
-		ble_stack_init();
-		device_manager_init();
-		gap_params_init();
+    // Initialization
+	leds_init();
+    timers_init();
+    gpiote_init();
+    buttons_init();
+	adc_init();
+
+	// BLE Initialization
+	ble_stack_init();
+	device_manager_init();
+	gap_params_init();
     advertising_init();
     services_init();	
     conn_params_init();
 	
-		// Scheduler
-		scheduler_init();
+	// Scheduler
+	scheduler_init();
 
     // Start execution
     advertising_start();
@@ -175,6 +136,7 @@ int main(void)
         //app_sched_execute();
         err_code = sd_app_evt_wait();
         APP_ERROR_CHECK(err_code);
+		app_sched_execute();
     }
 		
 }

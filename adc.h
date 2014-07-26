@@ -1,3 +1,13 @@
+/** @file
+ *
+ * @defgroup ble_back_rec_adc ADC Operation
+ * @{
+ * @ingroup ble_back_rec
+ * @brief Header for nrf51822 ADC operations
+ *
+ * This file contains parameters, functions and event handler for ADC operations
+ */
+
 #ifndef CUSTOM_INT_H__
 #define CUSTOM_INT_H__
 
@@ -14,7 +24,10 @@
         ((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
 				
 
-
+/**@brief Function for activate one battery level measurement. 
+ * @details This function will be activated each time the battery level measurement timer's
+ *					timeout event occurs. When triggered, it enables the ADC to execute one conversion.
+ */
 void battery_level_meas_timeout_handler(void * p_context);
 				
 /**@brief Function for handling the ADC interrupt.
@@ -26,6 +39,9 @@ void ADC_IRQHandler(void);
 /**@brief Function for initializing ADC operation
  */
 void adc_init(void);
-				
+			
 #endif
+
+/** @} */
+
 
