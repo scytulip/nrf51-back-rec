@@ -529,6 +529,11 @@
               <FileType>1</FileType>
               <FilePath>..\adc.c</FilePath>
             </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\timers.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1143,6 +1148,11 @@
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\timers.c</FilePath>
             </File>
           </Files>
         </Group>

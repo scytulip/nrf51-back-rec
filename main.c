@@ -29,10 +29,12 @@
 
 #include "main.h"
 #include "adc.h"
+#include "timers.h"
 #include "bluetooth.h"
 
 #include "ble_debug_assert_handler.h"
 #include "softdevice_handler.h"
+#include "pstorage.h"
 
 #include "nrf_gpio.h"
 #include "app_gpiote.h"
@@ -41,9 +43,6 @@
 #include "app_error.h"
 #include "boards.h"
 #include "app_util.h"
-
-// Global Variables
-static app_timer_id_t                   m_battery_timer_id;                         /**< Battery timer. */
 
 /*****************************************************************************
 * Initilization Functions
@@ -57,24 +56,6 @@ static void leds_init(void)
 {
     nrf_gpio_cfg_output(ADVERTISING_LED_PIN_NO);
     nrf_gpio_cfg_output(CONNECTED_LED_PIN_NO);
-}
-
-/**@brief Function for the Timer initialization.
- *
- * @details Initializes the timer module.
- */
-static void timers_init(void)
-{
-		uint32_t err_code;
-	
-    // Initialize timer module, making it use the scheduler
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
-	
-		// Timer for supply voltage monitor
-    err_code = app_timer_create(&m_battery_timer_id,
-                                APP_TIMER_MODE_REPEATED,
-                                battery_level_meas_timeout_handler);
-    APP_ERROR_CHECK(err_code);
 }
 
 /**@brief Function for initializing the GPIOTE handler module.
@@ -104,23 +85,6 @@ static void buttons_init(void)
     // GPIO_WAKEUP_BUTTON_CONFIG(WAKEUP_BUTTON_PIN);
 }
 
-/*****************************************************************************
-* Start Functions
-*****************************************************************************/
-
-/**@brief Function for starting timers.
-*/
-void timers_start(void)
-{
-    uint32_t err_code;
-
-    err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-}
-
-/*********************************************************
-* Not Arranged
-**********************************************************/
 // Persistent storage system event handler
 void pstorage_sys_event_handler (uint32_t p_evt);
 
@@ -166,21 +130,6 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
 
-/**@brief Function for handling Service errors.
- *
- * @details A pointer to this function will be passed to each service which may need to inform the
- *          application about an error.
- *
- * @param[in]   nrf_error   Error code containing information about what went wrong.
- */
-/*
-// YOUR_JOB: Uncomment this function and make it handle error situations sent back to your
-//           application by the services it uses.
-static void service_error_handler(uint32_t nrf_error)
-{
-    APP_ERROR_HANDLER(nrf_error);
-} */
-
 /**@brief Function for the Event Scheduler initialization.
  */
 static void scheduler_init(void)
@@ -201,6 +150,10 @@ int main(void)
     gpiote_init();
     buttons_init();
 		adc_init();
+	
+		// Initialize persistent storage module.
+    err_code = pstorage_init();
+    APP_ERROR_CHECK(err_code);
 	
 		// BLE Initialization
 		ble_stack_init();

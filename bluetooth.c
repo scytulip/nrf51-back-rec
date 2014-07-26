@@ -11,6 +11,7 @@
 #include "softdevice_handler.h"
 
 #include "main.h"
+#include "timers.h"
 #include "bluetooth.h"
 
 // Global Variables
@@ -405,10 +406,6 @@ void device_manager_init(void)
     uint32_t                err_code;
     dm_init_param_t         init_data;
     dm_application_param_t  register_param;
-    
-    // Initialize persistent storage module.
-    err_code = pstorage_init(); //MOVE!!
-    APP_ERROR_CHECK(err_code);
 
     // Clear all bonded centrals if the Bonds Delete button is pushed.
     // init_data.clear_persistent_data = (nrf_gpio_pin_read(BOND_DELETE_ALL_BUTTON_ID) == 0);

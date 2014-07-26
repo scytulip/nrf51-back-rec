@@ -29,9 +29,6 @@
 #define SEC_PARAM_MIN_KEY_SIZE          7                                           /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                          /**< Maximum encryption key size. */
 
-// BATTERY SERVICE
-#define BATTERY_LEVEL_MEAS_INTERVAL     APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER)  /**< Battery level measurement interval (ticks -> 2s). */
-
 void ble_bas_battery_level_update_handler(uint8_t percentage_batt_lvl);
 
 /**@brief Function for initializing the BLE stack.

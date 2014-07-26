@@ -53,7 +53,7 @@ void ADC_IRQHandler(void)
         }
     }
 		
-		NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Enabled;
+		NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Disabled;
 }
 
 void battery_level_meas_timeout_handler(void * p_context)
