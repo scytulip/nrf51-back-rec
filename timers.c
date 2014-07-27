@@ -1,9 +1,11 @@
 #include "adc.h"
 #include "timers.h"
+#include "back_dat.h"
 
 #include "app_timer.h"
 
-static app_timer_id_t                   m_battery_timer_id;                         /**< Battery timer. */
+static app_timer_id_t	m_battery_timer_id;			/**< Battery timer. */
+static app_timer_id_t	m_data_report_timer_id;		/**< Data report timer. */
 
 /*****************************************************************************
 * Initilization Functions
@@ -15,16 +17,22 @@ static app_timer_id_t                   m_battery_timer_id;                     
  */
 void timers_init(void)
 {
-		uint32_t err_code;
+	uint32_t err_code;
 	
     // Initialize timer module, making it use the scheduler
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, true);
 	
-		// Timer for supply voltage monitor
+	// Timer for supply voltage monitor (BLE)
     err_code = app_timer_create(&m_battery_timer_id,
                                 APP_TIMER_MODE_REPEATED,
                                 battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
+	
+	// Timer for data report (BLE)
+	err_code = app_timer_create(&m_data_report_timer_id,
+								APP_TIMER_MODE_REPEATED,
+								data_report_timeout_handler);
+	APP_ERROR_CHECK(err_code);
 }
 
 /*****************************************************************************
@@ -33,10 +41,22 @@ void timers_init(void)
 
 /**@brief Function for starting timers.
 */
-void timers_start(void)
+void ble_timers_start(void)
 {
     uint32_t err_code;
 
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
+	
+	err_code = app_timer_start(m_data_report_timer_id, DATA_REPORT_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
+
+void ble_timers_stop(void)
+{
+	uint32_t err_code;
+	
+	
+}
+
+

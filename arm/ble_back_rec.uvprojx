@@ -530,14 +530,19 @@
               <FilePath>..\adc.c</FilePath>
             </File>
             <File>
-              <FileName>timers.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\timers.c</FilePath>
-            </File>
-            <File>
               <FileName>gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>back_dat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\back_dat.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\timers.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -553,6 +558,16 @@
               <FileName>ble_bas.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_hrs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_hrs.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_dis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_dis.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1150,14 +1165,19 @@
               <FilePath>..\adc.c</FilePath>
             </File>
             <File>
-              <FileName>timers.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\timers.c</FilePath>
-            </File>
-            <File>
               <FileName>gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>back_dat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\back_dat.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\timers.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1173,6 +1193,16 @@
               <FileName>ble_bas.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_bas.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_hrs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_hrs.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_dis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_dis.c</FilePath>
             </File>
           </Files>
         </Group>

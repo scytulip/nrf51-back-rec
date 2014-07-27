@@ -8,6 +8,8 @@
 #include "ble_advdata.h"
 #include "ble_conn_params.h"
 #include "ble_bas.h"
+#include "ble_hrs.h"
+#include "ble_dis.h"
 #include "softdevice_handler.h"
 
 #include "timers.h"
@@ -15,13 +17,60 @@
 #include "bluetooth.h"
 
 // Global Variables
-static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
-static ble_bas_t               					bas;           															/**< Structure used to identify the battery service. */
-static dm_application_instance_t        m_app_handle;																/**< Application identifier allocated by device manager */
+static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection */
+static ble_bas_t               			m_bas;           							/**< Structure used to identify the battery service */
+static ble_hrs_t						m_dts;										/**< Structure used to report data instantly */
+static dm_application_instance_t        m_app_handle;								/**< Application identifier allocated by device manager */
+static bool								m_memory_access_in_progress;				/**< Status of Flash */
 
 /*****************************************************************************
 * Event Handlers & Dispatches
 *****************************************************************************/
+
+/**@brief Function for putting the chip in System OFF Mode
+ */
+void system_off_mode(void)
+{
+    uint32_t err_code;
+    uint32_t count;
+    
+    // Verify if there is any flash access pending
+    err_code = pstorage_access_status_get(&count);
+    APP_ERROR_CHECK(err_code);
+    
+    if (count != 0)
+    {
+        m_memory_access_in_progress = true;
+        return;
+    }
+
+    err_code = sd_power_system_off();
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for updating instant data.
+ *
+ * @details This function sends instant data through Heart Rate Service.
+ */
+void ble_dts_update_handler(uint16_t data)
+{
+	uint32_t err_code;
+	
+	ble_hrs_heart_rate_measurement_send(&m_dts, data);
+	
+	if (
+			(err_code != NRF_SUCCESS)
+			&&
+			(err_code != NRF_ERROR_INVALID_STATE)
+			&&
+			(err_code != BLE_ERROR_NO_TX_BUFFERS)
+			&&
+			(err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+	)
+	{
+		APP_ERROR_HANDLER(err_code);
+	}
+}
 
 /**@brief Function for updating battery level.
  *
@@ -29,7 +78,22 @@ static dm_application_instance_t        m_app_handle;																/**< Applic
  */
 void ble_bas_battery_level_update_handler(uint8_t percentage_batt_lvl)
 {
-		ble_bas_battery_level_update(&bas, percentage_batt_lvl);
+	uint32_t err_code;
+	
+	err_code = ble_bas_battery_level_update(&m_bas, percentage_batt_lvl);
+	
+	if (
+			(err_code != NRF_SUCCESS)
+			&&
+			(err_code != NRF_ERROR_INVALID_STATE)
+			&&
+			(err_code != BLE_ERROR_NO_TX_BUFFERS)
+			&&
+			(err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+	)
+	{
+		APP_ERROR_HANDLER(err_code);
+	}
 }
 
 /**@brief Function for handling the Device Manager events.
@@ -51,7 +115,7 @@ static uint32_t device_manager_evt_handler(dm_handle_t const    * p_handle,
  */
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
-    uint32_t                         err_code;
+	//uint32_t                         err_code;
     //static ble_gap_evt_auth_status_t m_auth_status;
     //ble_gap_enc_info_t *             p_enc_info;
 
@@ -60,35 +124,17 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_CONNECTED:
             nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
             nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-            //m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 				
-						timers_start(); // Start services requiring timers
+			timers_start(); // Start services requiring timers
 
-            /* YOUR_JOB: Uncomment this part if you are using the app_button module to handle button
-                         events (assuming that the button events are only needed in connected
-                         state). If this is uncommented out here,
-                            1. Make sure that app_button_disable() is called when handling
-                               BLE_GAP_EVT_DISCONNECTED below.
-                            2. Make sure the app_button module is initialized.
-            err_code = app_button_enable();
-            APP_ERROR_CHECK(err_code);
-            */
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-            //m_conn_handle = BLE_CONN_HANDLE_INVALID;
-
-            /* YOUR_JOB: Uncomment this part if you are using the app_button module to handle button
-                         events. This should be done to save power when not connected
-                         to a peer.
-            err_code = app_button_disable();
-            APP_ERROR_CHECK(err_code);
-            */
             
             advertising_start();
             break;
-				/*
+		/*
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
                                                    BLE_GAP_SEC_STATUS_SUCCESS,
@@ -131,8 +177,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                                          NRF_GPIO_PIN_SENSE_LOW);
                 
                 // Go to system-off mode (this function will not return; wakeup will cause a reset)                
-                err_code = sd_power_system_off();
-                APP_ERROR_CHECK(err_code);
+                system_off_mode();
             }
             break;
 
@@ -182,10 +227,11 @@ static void conn_params_error_handler(uint32_t nrf_error)
  */
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
-		dm_ble_evt_handler(p_ble_evt);
-		ble_bas_on_ble_evt(&bas, p_ble_evt);
+	dm_ble_evt_handler(p_ble_evt);
+	ble_bas_on_ble_evt(&m_bas, p_ble_evt);
+	ble_hrs_on_ble_evt(&m_dts, p_ble_evt);
     ble_conn_params_on_ble_evt(p_ble_evt);
-		on_ble_evt(p_ble_evt);    
+	on_ble_evt(p_ble_evt);    
 
 }
 
@@ -199,6 +245,21 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
     pstorage_sys_event_handler(sys_evt);
+	
+	switch(sys_evt)
+    {
+        case NRF_EVT_FLASH_OPERATION_SUCCESS:
+        case NRF_EVT_FLASH_OPERATION_ERROR:
+            if (m_memory_access_in_progress)
+            {
+                m_memory_access_in_progress = false;
+                system_off_mode();
+            }
+            break;
+        default:
+            // No implementation needed.
+            break;
+    }
 }
 
 /*****************************************************************************
@@ -250,12 +311,11 @@ void gap_params_init(void)
                                           strlen(DEVICE_NAME));
     APP_ERROR_CHECK(err_code);
 
-    /* YOUR_JOB: Use an appearance value matching the application's use case. */
-		err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HEART_RATE_SENSOR_HEART_RATE_BELT);
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_HEART_RATE_SENSOR_HEART_RATE_BELT);
     //err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
     APP_ERROR_CHECK(err_code); 
 																					
-		/* Set GAP Peripheral Preferred Connection Parameters. */
+	/* Set GAP Peripheral Preferred Connection Parameters. */
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
     gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
@@ -278,27 +338,27 @@ void advertising_init(void)
     uint32_t      err_code;
     ble_advdata_t advdata;
 	
-		/* In Limited Discoverable Mode, the device is only in Discoverable Mode
-				long enough for a device to pair up with it then goes back to Non-Discoverable Mode. */
+	/* In Limited Discoverable Mode, the device is only in Discoverable Mode
+	long enough for a device to pair up with it then goes back to Non-Discoverable Mode. */
 	
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
 
     // YOUR_JOB: Use UUIDs for service(s) used in your application.
-		/* 
-			1. Immediate alert for life emergency event
-	    2. Battery service for monitoring battery usage
-			3. Pseudo heart rate service for real-time data report
-	    4. Device information service for general report
-			5. UART service for group data transfer
-		*/
+	/* 
+	*1. Immediate alert for life emergency event
+	2. Battery service for monitoring battery usage
+	3. Pseudo heart rate service for real-time data report
+	4. Device information service for general report
+	*5. UART service for group data transfer
+	*/
     ble_uuid_t adv_uuids[] = 
-		{
-			//{BLE_UUID_IMMEDIATE_ALERT_SERVICE,				BLE_UUID_TYPE_BLE},		
-			{BLE_UUID_BATTERY_SERVICE, 								BLE_UUID_TYPE_BLE}		
-			//{BLE_UUID_HEART_RATE_SERVICE,							BLE_UUID_TYPE_BLE},		
-			//{BLE_UUID_DEVICE_INFORMATION_SERVICE, 		BLE_UUID_TYPE_BLE},		
-			//{BLE_UUID_NUS_SERVICE, 										BLE_UUID_TYPE_BLE}		
-		};
+	{
+		//{BLE_UUID_IMMEDIATE_ALERT_SERVICE,		BLE_UUID_TYPE_BLE},		
+		{BLE_UUID_BATTERY_SERVICE, 					BLE_UUID_TYPE_BLE},
+		{BLE_UUID_HEART_RATE_SERVICE,				BLE_UUID_TYPE_BLE},		
+		{BLE_UUID_DEVICE_INFORMATION_SERVICE, 		BLE_UUID_TYPE_BLE},		
+		//{BLE_UUID_NUS_SERVICE, 										BLE_UUID_TYPE_BLE}		
+	};
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
@@ -327,7 +387,7 @@ void conn_params_init(void)
     cp_init.first_conn_params_update_delay = FIRST_CONN_PARAMS_UPDATE_DELAY;
     cp_init.next_conn_params_update_delay  = NEXT_CONN_PARAMS_UPDATE_DELAY;
     cp_init.max_conn_params_update_count   = MAX_CONN_PARAMS_UPDATE_COUNT;
-    cp_init.start_on_notify_cccd_handle    = BLE_GATT_HANDLE_INVALID;
+    cp_init.start_on_notify_cccd_handle    = m_dts.hrm_handles.cccd_handle; //BLE_GATT_HANDLE_INVALID;
     cp_init.disconnect_on_fail             = true;
     cp_init.evt_handler                    = on_conn_params_evt;
     cp_init.error_handler                  = conn_params_error_handler;
@@ -343,37 +403,34 @@ void conn_params_init(void)
 void services_init(void)
 {
     uint32_t       err_code;
-    //ble_hrs_init_t hrs_init;
+	ble_hrs_init_t dts_init;
     ble_bas_init_t bas_init;
-    //ble_dis_init_t dis_init;
-    //uint8_t        body_sensor_location;
+    ble_dis_init_t dis_init;
+    uint8_t        body_sensor_location;
 
-		/*
-    // Initialize Heart Rate Service.
-    //body_sensor_location = BLE_HRS_BODY_SENSOR_LOCATION_FINGER;
+    // Initialize Data Report (Heart Rate) Service.
+    body_sensor_location = BLE_HRS_BODY_SENSOR_LOCATION_OTHER;
 
-    memset(&hrs_init, 0, sizeof(hrs_init));
+    memset(&dts_init, 0, sizeof(dts_init));
 
-    hrs_init.is_sensor_contact_supported = false;
-    hrs_init.p_body_sensor_location      = &body_sensor_location;
+    dts_init.is_sensor_contact_supported = false;
+    dts_init.p_body_sensor_location      = &body_sensor_location;
 
     // Here the sec level for the Heart Rate Service can be changed/increased.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_hrm_attr_md.cccd_write_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_hrm_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_hrm_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dts_init.hrs_hrm_attr_md.cccd_write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dts_init.hrs_hrm_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dts_init.hrs_hrm_attr_md.write_perm);
 
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&hrs_init.hrs_bsl_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&hrs_init.hrs_bsl_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dts_init.hrs_bsl_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&dts_init.hrs_bsl_attr_md.write_perm);
 
-    err_code = ble_hrs_init(&m_hrs, &hrs_init);
+    err_code = ble_hrs_init(&m_dts, &dts_init);
     APP_ERROR_CHECK(err_code);
-		*/
 
     // Initialize Battery Service.
     memset(&bas_init, 0, sizeof(bas_init));
 
     // Here the sec level for the Battery Service can be changed/increased.
-		
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.cccd_write_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&bas_init.battery_level_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&bas_init.battery_level_char_attr_md.write_perm);
@@ -385,12 +442,10 @@ void services_init(void)
     bas_init.p_report_ref         = NULL;
     bas_init.initial_batt_level   = 100;
 
-    err_code = ble_bas_init(&bas, &bas_init);
+    err_code = ble_bas_init(&m_bas, &bas_init);
     APP_ERROR_CHECK(err_code);
 		
-
-    /*
-		// Initialize Device Information Service
+	// Initialize Device Information Service
     memset(&dis_init, 0, sizeof(dis_init));
 
     ble_srv_ascii_to_utf8(&dis_init.manufact_name_str, MANUFACTURER_NAME);
@@ -400,7 +455,6 @@ void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
-		*/
 }
 
 /**@brief Function for the Device Manager initialization.

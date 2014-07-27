@@ -32,6 +32,7 @@
 #include "timers.h"
 #include "gpio.h"
 #include "bluetooth.h"
+#include "back_dat.h"
 
 #include "ble_debug_assert_handler.h"
 #include "softdevice_handler.h"
@@ -109,6 +110,9 @@ int main(void)
     err_code = pstorage_init();
     APP_ERROR_CHECK(err_code);
 	
+	// Scheduler
+	scheduler_init();
+	
     // Initialization
 	leds_init();
     timers_init();
@@ -123,9 +127,6 @@ int main(void)
     advertising_init();
     services_init();	
     conn_params_init();
-	
-	// Scheduler
-	scheduler_init();
 
     // Start execution
     advertising_start();

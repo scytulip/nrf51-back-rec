@@ -16,7 +16,8 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
-#define DEVICE_NAME                     "BKG Record"                             		/**< Name of device. Will be included in the advertising data. (CANNOT BE TOO LONG!)*/
+#define DEVICE_NAME                     "BKG Record"                             	/**< Name of device. Will be included in the advertising data. (CANNOT BE TOO LONG!)*/
+#define MANUFACTURER_NAME               "ResBand"									/**< Manufacturer. Will be passed to Device Information Service. */
 
 // Advertising Parameters
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
@@ -39,6 +40,12 @@
 #define SEC_PARAM_OOB                   0                                           /**< Out Of Band data not available. */
 #define SEC_PARAM_MIN_KEY_SIZE          7                                           /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                          /**< Maximum encryption key size. */
+
+/**@brief Function for updating instant data.
+ *
+ * @details This function sends instant data through Heart Rate Service.
+ */
+void ble_dts_update_handler(uint16_t data);
 
 /**@brief Function for updating battery level.
  *

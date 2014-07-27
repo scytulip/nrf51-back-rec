@@ -11,8 +11,6 @@
 #include "adc.h"
 #include "bluetooth.h"
 
-// static uint8_t testv = 0; /**< For Test */
-
 /*****************************************************************************
 * Event Handler
 *****************************************************************************/
@@ -26,28 +24,14 @@ static void ADC_IRQ_handler(void *p_event_data, uint16_t event_size)
 	uint8_t     adc_result;
 	uint16_t    batt_lvl_in_milli_volts;
 	uint8_t     percentage_batt_lvl;
-	uint32_t    err_code;
+	//uint32_t    err_code;
 	
 	adc_result = *(uint8_t *) p_event_data;
 	batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
 														DIODE_FWD_VOLT_DROP_MILLIVOLTS;
 	percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
-	//percentage_batt_lvl = (testv++) % 100;
 
 	ble_bas_battery_level_update_handler(percentage_batt_lvl);
-
-	if (
-			(err_code != NRF_SUCCESS)
-			&&
-			(err_code != NRF_ERROR_INVALID_STATE)
-			&&
-			(err_code != BLE_ERROR_NO_TX_BUFFERS)
-			&&
-			(err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-	)
-	{
-			APP_ERROR_HANDLER(err_code);
-	}
 
 	NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Disabled;
 }
