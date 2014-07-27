@@ -41,6 +41,7 @@
 #include "app_scheduler.h"
 #include "app_error.h"
 #include "boards.h"
+#include "nrf_temp.h"
 
 #define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 #define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
@@ -119,6 +120,7 @@ int main(void)
     gpiote_init();
     buttons_init();
 	adc_init();
+	temp_init(); // Initialize tempurature measurement for test
 
 	// BLE Initialization
 	ble_stack_init();

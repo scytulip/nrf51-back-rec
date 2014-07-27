@@ -18,7 +18,7 @@
 #define BATTERY_LEVEL_MEAS_INTERVAL     APP_TIMER_TICKS(4000, APP_TIMER_PRESCALER)  /**< Battery level measurement interval (ticks -> 4s). */
 
 // DATA REPORT SERVICE (HEART RATE SERVICE)
-#define DATA_REPORT_INTERVAL			APP_TIMER_TICKS(400, APP_TIMER_PRESCALER)	/**< Instant data report interval (0.4s) */
+#define DATA_REPORT_INTERVAL			APP_TIMER_TICKS(500, APP_TIMER_PRESCALER)	/**< Instant data report interval (0.4s) */
 
 /**@brief Function for the Timer initialization.
  *
@@ -28,7 +28,11 @@ void timers_init(void);
 
 /**@brief Function for starting timers.
 */
-void timers_start(void);
+void ble_timers_start(void);
+
+/**@brief Function for stoppingtimers (used for BLE services).
+*/
+void ble_timers_stop(void);
 
 #endif
 

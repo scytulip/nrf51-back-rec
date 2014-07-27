@@ -15,6 +15,9 @@
  */
 void data_report_timeout_handler(void *p_context);
 
+//Test group
+void temp_init(void);
+
 #endif
 
 /** @} */

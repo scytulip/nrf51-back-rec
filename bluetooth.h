@@ -21,7 +21,7 @@
 
 // Advertising Parameters
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      60                                         /**< The advertising timeout (in units of seconds). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      30                                         /**< The advertising timeout (in units of seconds). */
 
 // Connection Parameters
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(500, UNIT_1_25_MS)            /**< Minimum acceptable connection interval (0.5 seconds). */

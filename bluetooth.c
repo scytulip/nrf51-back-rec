@@ -125,12 +125,15 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
             nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 				
-			timers_start(); // Start services requiring timers
+			ble_timers_start(); // Start service-related timers
 
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+			nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+		
+			ble_timers_stop(); // Stop service-related timers
             
             advertising_start();
             break;

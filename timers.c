@@ -39,7 +39,7 @@ void timers_init(void)
 * Start Functions
 *****************************************************************************/
 
-/**@brief Function for starting timers.
+/**@brief Function for starting timers (used for BLE services).
 */
 void ble_timers_start(void)
 {
@@ -52,11 +52,17 @@ void ble_timers_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for stoppingtimers (used for BLE services).
+*/
 void ble_timers_stop(void)
 {
 	uint32_t err_code;
 	
+	err_code = app_timer_stop(m_battery_timer_id);
+    APP_ERROR_CHECK(err_code);
 	
+	err_code = app_timer_stop(m_data_report_timer_id);
+    APP_ERROR_CHECK(err_code);
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "nrf51.h"
 #include "nrf51_bitfields.h"
+#include "nrf_soc.h"
 
 #include "ble_conn_params.h"
 #include "softdevice_handler.h"
