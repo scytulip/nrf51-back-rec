@@ -18,7 +18,7 @@
 #define BATTERY_LEVEL_MEAS_INTERVAL     APP_TIMER_TICKS(4000, APP_TIMER_PRESCALER)  /**< Battery level measurement interval (ticks -> 4s). */
 
 // DATA REPORT SERVICE (HEART RATE SERVICE)
-#define DATA_REPORT_INTERVAL			APP_TIMER_TICKS(500, APP_TIMER_PRESCALER)	/**< Instant data report interval (0.4s) */
+#define DATA_REPORT_INTERVAL			APP_TIMER_TICKS(500, APP_TIMER_PRESCALER)	/**< Instant data report interval (0.5s) */
 
 /**@brief Function for the Timer initialization.
  *
