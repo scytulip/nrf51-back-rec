@@ -1,6 +1,7 @@
 #ifndef CUSTOM_ADC_C__
 #define CUSTOM_ADC_C__
 
+#include "nrf.h"
 #include "nrf51.h"
 #include "nrf51_bitfields.h"
 #include "nrf_soc.h"

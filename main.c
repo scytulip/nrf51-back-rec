@@ -21,6 +21,9 @@
 #include "bluetooth.h"
 #include "back_dat.h"
 
+#define UART_DEBUG_ENABLE 1
+#include "uart.h"
+
 #include "ble_debug_assert_handler.h"
 #include "softdevice_handler.h"
 #include "pstorage.h"
@@ -107,6 +110,7 @@ int main(void)
     gpiote_init();
     buttons_init();
 	adc_init();
+	
 
 	// BLE Initialization
 	ble_stack_init();
@@ -115,6 +119,9 @@ int main(void)
     advertising_init();
     services_init();	
     conn_params_init();
+	
+	// Initialize UART debug operation
+	uart_init();			DEBUG_ASSERT("Initialization Ready.\r\n");	
 
     // Start execution
     advertising_start();
@@ -123,7 +130,7 @@ int main(void)
     for (;;)
     {
     	err_code = sd_app_evt_wait();
-        APP_ERROR_CHECK(err_code);
+		APP_ERROR_CHECK(err_code);
 		app_sched_execute();
     }
 		

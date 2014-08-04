@@ -5,7 +5,7 @@
  * @ingroup ble_back_rec
  * @brief Header for IO Operation
  *
- * This file contains a functions for operating GPIOs, including buttons, LEDs, UART, etc.
+ * This file contains functions for operating GPIOs, including buttons, LEDs, UART, etc.
  */
  
 #ifndef CUSTOM_GPIO_H__

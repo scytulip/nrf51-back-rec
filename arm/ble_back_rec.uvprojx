@@ -544,6 +544,11 @@
               <FileType>1</FileType>
               <FilePath>..\timers.c</FilePath>
             </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\uart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1178,6 +1183,11 @@
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\uart.c</FilePath>
             </File>
           </Files>
         </Group>
