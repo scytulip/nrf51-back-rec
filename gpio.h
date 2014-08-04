@@ -38,3 +38,5 @@ void buttons_init(void);
  
 #endif
  
+/** @} */
+ 

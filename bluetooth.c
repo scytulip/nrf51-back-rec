@@ -115,9 +115,7 @@ static uint32_t device_manager_evt_handler(dm_handle_t const    * p_handle,
  */
 static void on_ble_evt(ble_evt_t * p_ble_evt)
 {
-	//uint32_t                         err_code;
-    //static ble_gap_evt_auth_status_t m_auth_status;
-    //ble_gap_enc_info_t *             p_enc_info;
+	uint32_t                         err_code;
 
     switch (p_ble_evt->header.evt_id)
     {
@@ -134,40 +132,13 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 			nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 		
 			ble_timers_stop(); // Stop service-related timers
+			
+			/** @note: Remember to clear connection handle.
+						Otherwise, the chip cannot be waken up after entering sleep mode!*/
+			m_conn_handle = BLE_CONN_HANDLE_INVALID; 
             
             advertising_start();
             break;
-		/*
-        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
-                                                   BLE_GAP_SEC_STATUS_SUCCESS,
-                                                   &m_sec_params);
-            APP_ERROR_CHECK(err_code);
-            break;
-
-        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0);
-            APP_ERROR_CHECK(err_code);
-            break;
-
-        case BLE_GAP_EVT_AUTH_STATUS:
-            m_auth_status = p_ble_evt->evt.gap_evt.params.auth_status;
-            break;
-
-        case BLE_GAP_EVT_SEC_INFO_REQUEST:
-            p_enc_info = &m_auth_status.periph_keys.enc_info;
-            if (p_enc_info->div == p_ble_evt->evt.gap_evt.params.sec_info_request.div)
-            {
-                err_code = sd_ble_gap_sec_info_reply(m_conn_handle, p_enc_info, NULL);
-                APP_ERROR_CHECK(err_code);
-            }
-            else
-            {
-                // No keys found for this device
-                err_code = sd_ble_gap_sec_info_reply(m_conn_handle, NULL, NULL);
-                APP_ERROR_CHECK(err_code);
-            }
-            break; */
 
         case BLE_GAP_EVT_TIMEOUT:
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
@@ -181,6 +152,15 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                 
                 // Go to system-off mode (this function will not return; wakeup will cause a reset)                
                 system_off_mode();
+            }
+            break;
+			
+		case BLE_GATTS_EVT_TIMEOUT:
+            if (p_ble_evt->evt.gatts_evt.params.timeout.src == BLE_GATT_TIMEOUT_SRC_PROTOCOL)
+            {
+                err_code = sd_ble_gap_disconnect(m_conn_handle,
+                                                 BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+                APP_ERROR_CHECK(err_code);
             }
             break;
 
@@ -286,7 +266,7 @@ void ble_stack_init(void)
     ble_enable_params.gatts_enable_params.service_changed = IS_SRVC_CHANGED_CHARACT_PRESENT;
     err_code = sd_ble_enable(&ble_enable_params);
     APP_ERROR_CHECK(err_code);
-
+	
     // Register with the SoftDevice handler module for BLE events.
     err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
     APP_ERROR_CHECK(err_code);
@@ -356,7 +336,6 @@ void advertising_init(void)
 	*/
     ble_uuid_t adv_uuids[] = 
 	{
-		//{BLE_UUID_IMMEDIATE_ALERT_SERVICE,		BLE_UUID_TYPE_BLE},		
 		{BLE_UUID_BATTERY_SERVICE, 					BLE_UUID_TYPE_BLE},
 		{BLE_UUID_HEART_RATE_SERVICE,				BLE_UUID_TYPE_BLE},		
 		{BLE_UUID_DEVICE_INFORMATION_SERVICE, 		BLE_UUID_TYPE_BLE},		
@@ -515,4 +494,3 @@ void advertising_start(void)
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 }
 
-/** @} */

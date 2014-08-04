@@ -1,14 +1,4 @@
-/* Copyright (c) 2012 Nordic Semiconductor. All Rights Reserved.
- *
- * The information contained herein is property of Nordic Semiconductor ASA.
- * Terms and conditions of usage are described in detail in NORDIC
- * SEMICONDUCTOR STANDARD SOFTWARE LICENSE AGREEMENT.
- *
- * Licensees are granted free, non-transferable use of the information. NO
- * WARRANTY of ANY KIND is provided. This heading must NOT be removed from
- * the file.
- *
- */
+/* Copyright (c) 2014 ResBand. All Rights Reserved. */
 
 /** @file
  *
@@ -16,12 +6,9 @@
  * @{
  * @ingroup ble_back_rec
  * @brief Project main file.
+ * @author Congyin Shi
  *
- * This file contains a template for creating a new application. It has the code necessary to wakeup
- * from button, advertise, get a connection restart advertising on disconnect and if no new
- * connection created go back to system-off mode.
- * It can easily be used as a starting point for creating a new application, the comments identified
- * with 'YOUR_JOB' indicates where and how you can customize.
+ * This file contains platform code of background data recording based on NordicSemi (c) nRF51822.
  */
 
 #include <stdint.h>
@@ -120,7 +107,6 @@ int main(void)
     gpiote_init();
     buttons_init();
 	adc_init();
-	temp_init(); // Initialize tempurature measurement for test
 
 	// BLE Initialization
 	ble_stack_init();
@@ -136,8 +122,7 @@ int main(void)
     // Enter main loop
     for (;;)
     {
-        //app_sched_execute();
-        err_code = sd_app_evt_wait();
+    	err_code = sd_app_evt_wait();
         APP_ERROR_CHECK(err_code);
 		app_sched_execute();
     }
