@@ -35,7 +35,7 @@
 
 #define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 #define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
-#define SCHED_QUEUE_SIZE                10                                          /**< Maximum number of events in the scheduler queue. */
+#define SCHED_QUEUE_SIZE                16                                          /**< Maximum number of events in the scheduler queue. */
 
 /**@brief Function for error handling, which is called when an error has occurred.
  *
@@ -96,6 +96,8 @@ int main(void)
 {
 	
 	uint32_t err_code;
+	
+	nrf_temp_init();
 	
 	// Initialize persistent storage module.
     err_code = pstorage_init();
