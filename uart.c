@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include "uart.h"
 #include "nrf.h"
@@ -6,11 +7,50 @@
 
 #include "softdevice_handler.h"
 
+#pragma import(__use_no_semihosting_swi)
+
+struct __FILE { int handle; };
+FILE __stdout;
+FILE __stdin;
+
 static uint8_t uart_tx_busy = 0;  /**< indication to the state of UART TX module */
+
+/************************************************************
+ * Retarget printf
+ ***********************************************************/
+
+/** @brief Print a char to UART */
+int fputc(int c, FILE *f) 
+{
+	uart_tx_busy = 1;
+	NRF_UART0->TXD = (uint8_t) c;
+	while (uart_tx_busy);
+	return 0;
+}
+
+/** @brief printf error handle */
+int ferror(FILE *f)
+{
+	return EOF;
+}
+
+/** @brief printf tty handle */
+void _ttywrch(int c) 
+{
+	uart_tx_busy = 1;
+	NRF_UART0->TXD = (uint8_t) c;
+	while (uart_tx_busy);
+}
+
+/** @brief printf handle */
+void _sys_exit(int return_code) {
+	label:  goto label;  /* endless loop */
+}
 
 /************************************************************
  * Operation Function
  ***********************************************************/
+
 /** @brief Print a string to UART terminal */
 void uart_putstr(const uint8_t *str)
 {
@@ -24,6 +64,7 @@ void uart_putstr(const uint8_t *str)
 		ch = str[i++];
 		while (uart_tx_busy);
 	}
+
 }
 
 /************************************************************
@@ -72,7 +113,7 @@ void uart_init(void)
 	// Enable interruption
 	NRF_UART0->INTENSET = UART_INTENSET_TXDRDY_Msk; /**< Turn on TX Ready interruption */
 	NRF_UART0->BAUDRATE = (UART_BAUDRATE_BAUDRATE_Baud38400 << UART_BAUDRATE_BAUDRATE_Pos);
-    NRF_UART0->ENABLE = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
+	NRF_UART0->ENABLE = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
 
     err_code = sd_nvic_ClearPendingIRQ(UART0_IRQn);
     APP_ERROR_CHECK(err_code);
@@ -84,8 +125,6 @@ void uart_init(void)
     APP_ERROR_CHECK(err_code);
 	
 	NRF_UART0->TASKS_STARTTX = 1;
-    // NRF_UART0->TASKS_STARTRX = 1;
-    // NRF_UART0->EVENTS_RXDRDY = 0;
 	
 }
 

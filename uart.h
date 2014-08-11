@@ -12,12 +12,19 @@
 #ifndef CUSTOM_UART_H__
 #define CUSTOM_UART_H__
 #include <stdint.h>
+#include <stdio.h>
+
+#define UART_DEBUG_ENABLE 1
 
 #define RX_PIN_NO  		11
 #define TX_PIN_NO  		9
 #define CTS_PIN_NO 		10
 #define RTS_PIN_NO 		8
 #define HW_FLOWCTRL		true
+	
+	
+int fputc(int c, FILE *f);
+int ferror(FILE *f);
 	
 /** @brief Print a string to UART terminal */
 void uart_putstr(const uint8_t *str);
@@ -31,6 +38,13 @@ void uart_init(void);
 #else
 	#define DEBUG_ASSERT(STR)
 #endif
+
+#ifdef UART_DEBUG_ENABLE
+	#define DEBUG_PF(STR,...) printf(STR,__VA_ARGS__);
+#else
+	#define DEBUG_PF(STR)
+#endif
+
 
 #endif
 
