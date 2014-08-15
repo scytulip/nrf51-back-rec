@@ -15,23 +15,23 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "ble_debug_assert_handler.h"
+#include "softdevice_handler.h"
+#include "pstorage.h"
+
+#include "nrf51_bitfields.h"
+#include "app_scheduler.h"
+#include "app_error.h"
+#include "boards.h"
+#include "nrf_delay.h"
+
 #include "main.h"
 #include "adc.h"
 #include "timers.h"
 #include "gpio.h"
 #include "bluetooth.h"
 #include "back_dat.h"
-
 #include "uart.h"
-
-#include "ble_debug_assert_handler.h"
-#include "softdevice_handler.h"
-#include "pstorage.h"
-
-#include "app_scheduler.h"
-#include "app_error.h"
-#include "boards.h"
-#include "nrf_temp.h"
 
 #define DEAD_BEEF                       0xDEADBEEF                                  /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 #define SCHED_MAX_EVENT_DATA_SIZE       sizeof(app_timer_event_t)                   /**< Maximum size of scheduler events. Note that scheduler BLE stack events do not contain any data, as the events are being pulled from the stack in the event handler. */
@@ -48,23 +48,23 @@
  */
 void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
 {
-    // nrf_gpio_pin_set(ASSERT_LED_PIN_NO);
+	// nrf_gpio_pin_set(ASSERT_LED_PIN_NO);
 
-    // This call can be used for debug purposes during application development.
-    // @note CAUTION: Activating this code will write the stack to flash on an error.
-    //                This function should NOT be used in a final product.
-    //                It is intended STRICTLY for development/debugging purposes.
-    //                The flash write will happen EVEN if the radio is active, thus interrupting
-    //                any communication.
-    //                Use with care. Un-comment the line below to use.
-	
+	// This call can be used for debug purposes during application development.
+	// @note CAUTION: Activating this code will write the stack to flash on an error.
+	//                This function should NOT be used in a final product.
+	//                It is intended STRICTLY for development/debugging purposes.
+	//                The flash write will happen EVEN if the radio is active, thus interrupting
+	//                any communication.
+	//                Use with care. Un-comment the line below to use.
+
 	nrf_gpio_pin_set(LED_0);
 	nrf_gpio_pin_set(LED_1);
-	
-    ble_debug_assert_handler(error_code, line_num, p_file_name);
 
-    // On assert, the system can only recover with a reset.
-    NVIC_SystemReset();
+	ble_debug_assert_handler(error_code, line_num, p_file_name);
+
+	// On assert, the system can only recover with a reset.
+	NVIC_SystemReset();
 }
 
 /**@brief Callback function for asserts in the SoftDevice.
@@ -80,66 +80,83 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
  */
 void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 {
-    app_error_handler(DEAD_BEEF, line_num, p_file_name);
+	app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
 
 /**@brief Function for the Event Scheduler initialization.
  */
 static void scheduler_init(void)
 {
-    APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
+	APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 }
 
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-	
+
 	uint32_t err_code;
-	
-	// Core temperature sensor
-	nrf_temp_init();
-	
+
+	/** @note In the very first power cycle (reset or battery change),
+	system will go into off mode directly and set input sense on a button.
+	This button is used to toggle system on/off (virtual power switch). */
+//
+//	if ((NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk) )
+//    {
+//		/* set GPIO configuration and enable GPIOTE PORT event */
+//		gpiote_init();
+//		//buttons_init();
+//
+//		// Configure buttons with sense level low as wakeup source.
+//		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
+//								 BUTTON_PULL,
+//								 NRF_GPIO_PIN_SENSE_LOW);
+//
+//		/* Go to systemoff, wait for button press */
+//		NRF_POWER->SYSTEMOFF = 1;
+//
+//    }
+
 	// Persistent storage module.
-    err_code = pstorage_init();
-    APP_ERROR_CHECK(err_code);
-	
+	err_code = pstorage_init();
+	APP_ERROR_CHECK(err_code);
+
 	// Scheduler
 	scheduler_init();
-	
+
 	// Softdevice
 	ble_stack_init();
-	
+
 	// UART
 	uart_init();
-	
-    // Initialization
+
+	// Initialization
 	DEBUG_ASSERT("Initializing peripherals...\r\n");
 	leds_init();
-    timers_init();
-    gpiote_init();
-    buttons_init();
+	timers_init();
+	gpiote_init();
+	buttons_init();
 	adc_init();
 	ds1621_init();
-	
+
 	// BLE Initialization
 	DEBUG_ASSERT("Initializing BLE...\r\n");
 	device_manager_init();
 	gap_params_init();
-    advertising_init();
-    services_init();	
-    conn_params_init();
+	advertising_init();
+	services_init();
+	conn_params_init();
 
-    // Start execution
+	// Start execution
 	DEBUG_ASSERT("Start advertising...\r\n");
-    advertising_start();
-	
-    // Enter main loop
-    for (;;)
-    {
-    	err_code = sd_app_evt_wait();
+	advertising_start();
+
+	// Enter main loop
+	for (;;)
+	{
+		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
 		app_sched_execute();
-    }
-		
+	}
+
 }

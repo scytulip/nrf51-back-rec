@@ -366,7 +366,7 @@
               <MiscControls></MiscControls>
               <Define>NRF51 DEBUG_NRF_USER BLE_STACK_SUPPORT_REQD BOARD_PCA10001</Define>
               <Undefine></Undefine>
-              <IncludePath>..;..\..\..\..\..\Include;..\..\..\..\..\Include\app_common;..\..\..\..\..\Include\ble;..\..\..\..\..\Include\ble\device_manager;..\..\..\..\..\Include\ble\ble_services;..\..\..\..\..\Include\s110;..\..\..\..\..\Include\sd_common;..\..\..\..\..\Include\sdk;..\..\..\..\..\Include\sdk_soc</IncludePath>
+              <IncludePath>..;..\peri;..\i2c;..\spi;..\..\..\..\..\Include;..\..\..\..\..\Include\app_common;..\..\..\..\..\Include\ble;..\..\..\..\..\Include\ble\device_manager;..\..\..\..\..\Include\ble\ble_services;..\..\..\..\..\Include\s110;..\..\..\..\..\Include\sd_common;..\..\..\..\..\Include\sdk;..\..\..\..\..\Include\sdk_soc;..\..\..\..\..\Include\serialization;..\..\experimental\ble_app_uart</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -520,34 +520,34 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>bluetooth.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bluetooth.c</FilePath>
-            </File>
-            <File>
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\gpio.c</FilePath>
+              <FilePath>..\peri\adc.c</FilePath>
             </File>
             <File>
               <FileName>back_dat.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\back_dat.c</FilePath>
+              <FilePath>..\peri\back_dat.c</FilePath>
+            </File>
+            <File>
+              <FileName>bluetooth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peri\bluetooth.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peri\gpio.c</FilePath>
             </File>
             <File>
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\timers.c</FilePath>
+              <FilePath>..\peri\timers.c</FilePath>
             </File>
             <File>
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\uart.c</FilePath>
+              <FilePath>..\peri\uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -573,6 +573,11 @@
               <FileName>ble_dis.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_dis.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_nus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\experimental\ble_app_uart\ble_nus.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -647,7 +652,17 @@
             <File>
               <FileName>sd_twi_hw_master.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sd_twi_hw_master.c</FilePath>
+              <FilePath>..\peri\sd_twi_hw_master.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>i2c_ds1621.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\i2c\i2c_ds1621.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1170,34 +1185,34 @@
               <FilePath>.\..\main.c</FilePath>
             </File>
             <File>
-              <FileName>bluetooth.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\bluetooth.c</FilePath>
-            </File>
-            <File>
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\gpio.c</FilePath>
+              <FilePath>..\peri\adc.c</FilePath>
             </File>
             <File>
               <FileName>back_dat.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\back_dat.c</FilePath>
+              <FilePath>..\peri\back_dat.c</FilePath>
+            </File>
+            <File>
+              <FileName>bluetooth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peri\bluetooth.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peri\gpio.c</FilePath>
             </File>
             <File>
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\timers.c</FilePath>
+              <FilePath>..\peri\timers.c</FilePath>
             </File>
             <File>
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\uart.c</FilePath>
+              <FilePath>..\peri\uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1223,6 +1238,11 @@
               <FileName>ble_dis.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Source\ble\ble_services\ble_dis.c</FilePath>
+            </File>
+            <File>
+              <FileName>ble_nus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\experimental\ble_app_uart\ble_nus.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1297,7 +1317,17 @@
             <File>
               <FileName>sd_twi_hw_master.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sd_twi_hw_master.c</FilePath>
+              <FilePath>..\peri\sd_twi_hw_master.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>i2c_ds1621.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\i2c\i2c_ds1621.c</FilePath>
             </File>
           </Files>
         </Group>

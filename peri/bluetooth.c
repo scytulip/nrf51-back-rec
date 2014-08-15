@@ -4,6 +4,7 @@
 #include "pstorage.h"
 #include "nrf_gpio.h"
 
+#include "ble_gap.h"
 #include "ble_hci.h"
 #include "ble_advdata.h"
 #include "ble_conn_params.h"
@@ -492,5 +493,6 @@ void advertising_start(void)
     err_code = sd_ble_gap_adv_start(&adv_params);
     APP_ERROR_CHECK(err_code);
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+
 }
 

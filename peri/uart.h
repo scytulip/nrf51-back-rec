@@ -22,9 +22,13 @@
 #define RTS_PIN_NO 		8
 #define HW_FLOWCTRL		true
 	
-	
-int fputc(int c, FILE *f);
-int ferror(FILE *f);
+enum {
+	UART_WIRE_OUT,
+	UART_BLE_OUT
+};
+
+int fputc(int c, FILE *f);	/**< Retarget fputc() */
+int ferror(FILE *f);		/**< Retarget ferror() */
 	
 /** @brief Print a string to UART terminal */
 void uart_putstr(const uint8_t *str);
@@ -40,7 +44,7 @@ void uart_init(void);
 #endif
 
 #ifdef UART_DEBUG_ENABLE
-	#define DEBUG_PF(STR,...) printf(STR,__VA_ARGS__);
+	#define DEBUG_PF(STR,...) printf(STR, __VA_ARGS__);
 #else
 	#define DEBUG_PF(STR)
 #endif

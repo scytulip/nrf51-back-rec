@@ -6,18 +6,11 @@
 #include "softdevice_handler.h"
 #include "app_scheduler.h"
 
-#include "bluetooth.h"
-#include "back_dat.h"
-
-#include <stdio.h>
-#include <stdint.h>
-#include "uart.h"
 #include "twi_master.h"
+#include "uart.h"
 #include "nrf_delay.h"
 
-// Core Temp. Sensor (FOR TEST)
-// #include "nrf_temp.h"
-// static int32_t core_temp_val; /**< Core Temperature Value */
+#include "i2c_ds1621.h"
 
 /* DS1621 Addresses & Commands */
 #define DS1621_ADDRESS			0x9A //!< DS1621 TWI address 1010_{A2,A1,A0}_0
@@ -28,8 +21,6 @@ const uint8_t command_access_config      = 0xAC; //!< Reads or writes configurat
 const uint8_t command_read_temp          = 0xAA; //!< Reads last converted temperature value from temperature register
 const uint8_t command_start_convert_temp = 0xEE; //!< Initiates temperature conversion.
 const uint8_t command_stop_convert_temp  = 0x22; //!< Halts temperature conversion.
-
-static uint8_t fsm_state = 0;		/**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
 /*****************************************************************************
 * Driver for Maxim (c) DS1621+
@@ -139,43 +130,3 @@ void ds1621_temp_read(int8_t *temp, int8_t *temp_frac)
 	NRF_TWI1->ENABLE = TWI_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos; /**< Save power! */
 }
 
-/*****************************************************************************
-* Event Handlers
-*****************************************************************************/
-
-/**@brief Function for send instant data. 
- * @details This function will be activated each time the data report timer's
- *			timeout event occurs.
- */
-void data_report_timeout_handler(void *p_context)
-{	
-
-	UNUSED_PARAMETER(p_context);
-	
-	/**@note Use sd_temp_get(&temp) to obtain the core temperature if the softdevice is enabled.
-			And the variable "temp" should be static.
-	*/
-	/* Core Temp. Sensor (FOR TEST) */
-	// uint32_t err_code;
-	// err_code = sd_temp_get(&core_temp_val);
-	// APP_ERROR_CHECK(err_code);
-	
-	int8_t temp, temp_frac;
-	
-	switch(fsm_state)
-	{
-		case 0: 
-		{	
-			ds1624_start_temp_conversion();
-			break;
-		}
-		case 1: 
-		{
-			ds1621_temp_read(&temp, &temp_frac);
-			ble_dts_update_handler((uint16_t) temp); 
-			break;
-		} 
-	}
-	fsm_state = (fsm_state + 1) % 2;
-	
-}

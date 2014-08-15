@@ -10,8 +10,7 @@
 #pragma import(__use_no_semihosting_swi)
 
 struct __FILE { int handle; };
-FILE __stdout;
-FILE __stdin;
+FILE __stdout = { UART_WIRE_OUT };		/**< File handle (output) for UART */
 
 static uint8_t uart_tx_busy = 0;  /**< indication to the state of UART TX module */
 
@@ -22,9 +21,22 @@ static uint8_t uart_tx_busy = 0;  /**< indication to the state of UART TX module
 /** @brief Print a char to UART */
 int fputc(int c, FILE *f) 
 {
-	uart_tx_busy = 1;
-	NRF_UART0->TXD = (uint8_t) c;
-	while (uart_tx_busy);
+	switch ( f->handle )
+	{
+		case UART_WIRE_OUT :
+		{
+			/** @note stdout is UART0 */
+			uart_tx_busy = 1;
+			NRF_UART0->TXD = (uint8_t) c;
+			while (uart_tx_busy);
+			break;
+		}
+		case UART_BLE_OUT :
+		{
+			/** @note Send data through Nordic UART BLE service (experimental) */
+			
+		}
+	}
 	return 0;
 }
 
