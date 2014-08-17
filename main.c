@@ -100,22 +100,30 @@ int main(void)
 	/** @note In the very first power cycle (reset or battery change),
 	system will go into off mode directly and set input sense on a button.
 	This button is used to toggle system on/off (virtual power switch). */
-//
-//	if ((NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk) )
+	
+	/** @note Unless cleared, NRF_POWER->RESETREAS is cumulative. 
+	A field is cleared by writing ‘1’ to it. If none of the reset sources are 
+	flagged, it indicates that the chip was reset from the on-chip reset generator. */
+
+//	if ((NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk))
 //    {
+//		NRF_POWER->RESETREAS = 0;	/**< Important! Clear reset reason register */
+//		
 //		/* set GPIO configuration and enable GPIOTE PORT event */
 //		gpiote_init();
-//		//buttons_init();
-//
+
 //		// Configure buttons with sense level low as wakeup source.
 //		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
 //								 BUTTON_PULL,
 //								 NRF_GPIO_PIN_SENSE_LOW);
-//
+
 //		/* Go to systemoff, wait for button press */
 //		NRF_POWER->SYSTEMOFF = 1;
-//
+//		return 0;
+
 //    }
+
+// NRF_SUCCESS
 
 	// Persistent storage module.
 	err_code = pstorage_init();
@@ -143,13 +151,15 @@ int main(void)
 	DEBUG_ASSERT("Initializing BLE...\r\n");
 	device_manager_init();
 	gap_params_init();
-	advertising_init();
 	services_init();
+	advertising_init();
 	conn_params_init();
 
 	// Start execution
 	DEBUG_ASSERT("Start advertising...\r\n");
 	advertising_start();
+	
+	DEBUG_PF("Reset Reason: %x\r\n", NRF_POWER->RESETREAS);
 
 	// Enter main loop
 	for (;;)

@@ -11,6 +11,7 @@
 #include "ble_bas.h"
 #include "ble_hrs.h"
 #include "ble_dis.h"
+#include "ble_nus.h"
 #include "softdevice_handler.h"
 
 #include "timers.h"
@@ -21,6 +22,7 @@
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection */
 static ble_bas_t               			m_bas;           							/**< Structure used to identify the battery service */
 static ble_hrs_t						m_dts;										/**< Structure used to report data instantly */
+static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
 static dm_application_instance_t        m_app_handle;								/**< Application identifier allocated by device manager */
 static bool								m_memory_access_in_progress;				/**< Status of Flash */
 
@@ -73,6 +75,12 @@ void ble_dts_update_handler(uint16_t data)
 	}
 }
 
+/**@brief    Function for handling the data from the Nordic UART Service.
+ */
+void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
+{
+}
+
 /**@brief Function for updating battery level.
  *
  * @details This function is called in ADC_IRQHandler to update current battery level.
@@ -123,6 +131,8 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_CONNECTED:
             nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
             nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+		
+			m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 				
 			ble_timers_start(); // Start service-related timers
 
@@ -212,10 +222,11 @@ static void conn_params_error_handler(uint32_t nrf_error)
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
 	dm_ble_evt_handler(p_ble_evt);
+	ble_conn_params_on_ble_evt(p_ble_evt);
 	ble_bas_on_ble_evt(&m_bas, p_ble_evt);
 	ble_hrs_on_ble_evt(&m_dts, p_ble_evt);
-    ble_conn_params_on_ble_evt(p_ble_evt);
-	on_ble_evt(p_ble_evt);    
+	ble_nus_on_ble_evt(&m_nus, p_ble_evt);
+	on_ble_evt(p_ble_evt);  
 
 }
 
@@ -321,40 +332,41 @@ void advertising_init(void)
 {
     uint32_t      err_code;
     ble_advdata_t advdata;
+	ble_advdata_t scanrsp;
 	
 	/* In Limited Discoverable Mode, the device is only in Discoverable Mode
 	long enough for a device to pair up with it then goes back to Non-Discoverable Mode. */
 	
     uint8_t       flags = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
 
-    // YOUR_JOB: Use UUIDs for service(s) used in your application.
 	/* 
-	*1. Immediate alert for life emergency event
-	2. Battery service for monitoring battery usage
-	3. Pseudo heart rate service for real-time data report
-	4. Device information service for general report
-	*5. UART service for group data transfer
+	1. Battery service for monitoring battery usage
+	2. Pseudo heart rate service for real-time data report
+	3. Device information service for general report
+	4. UART service for group data transfer
 	*/
     ble_uuid_t adv_uuids[] = 
 	{
-		{BLE_UUID_BATTERY_SERVICE, 					BLE_UUID_TYPE_BLE},
+		{BLE_UUID_BATTERY_SERVICE,					BLE_UUID_TYPE_BLE},
 		{BLE_UUID_HEART_RATE_SERVICE,				BLE_UUID_TYPE_BLE},		
-		{BLE_UUID_DEVICE_INFORMATION_SERVICE, 		BLE_UUID_TYPE_BLE},		
-		//{BLE_UUID_NUS_SERVICE, 										BLE_UUID_TYPE_BLE}		
-	};
+		{BLE_UUID_DEVICE_INFORMATION_SERVICE,		BLE_UUID_TYPE_BLE},
+		{BLE_UUID_NUS_SERVICE, 						m_nus.uuid_type}
+	}; // Too long to fit all in advdata
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
-
+	memset(&scanrsp, 0, sizeof(scanrsp));
+	
     advdata.name_type               = BLE_ADVDATA_FULL_NAME;
     advdata.include_appearance      = true;
     advdata.flags.size              = sizeof(flags);
     advdata.flags.p_data            = &flags;
-    advdata.uuids_complete.uuid_cnt = sizeof(adv_uuids) / sizeof(adv_uuids[0]);
-    advdata.uuids_complete.p_uuids  = adv_uuids;
+    scanrsp.uuids_complete.uuid_cnt = sizeof(adv_uuids) / sizeof(adv_uuids[0]);
+    scanrsp.uuids_complete.p_uuids  = adv_uuids;
 
-    err_code = ble_advdata_set(&advdata, NULL);
+    err_code = ble_advdata_set(&advdata, &scanrsp);
     APP_ERROR_CHECK(err_code);
+	
 }
 
 /**@brief Function for initializing the Connection Parameters module.
@@ -389,6 +401,7 @@ void services_init(void)
 	ble_hrs_init_t dts_init;
     ble_bas_init_t bas_init;
     ble_dis_init_t dis_init;
+	ble_nus_init_t nus_init;
     uint8_t        body_sensor_location;
 
     // Initialize Data Report (Heart Rate) Service.
@@ -438,6 +451,15 @@ void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
+	
+	// Initialize Nordic BLE UART Service
+	memset(&nus_init, 0, sizeof(nus_init));
+
+    nus_init.data_handler = nus_data_handler;
+    
+    err_code = ble_nus_init(&m_nus, &nus_init);
+    APP_ERROR_CHECK(err_code);
+	
 }
 
 /**@brief Function for the Device Manager initialization.

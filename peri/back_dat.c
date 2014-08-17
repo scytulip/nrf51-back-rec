@@ -6,9 +6,6 @@
 #include "softdevice_handler.h"
 #include "app_scheduler.h"
 
-#include "bluetooth.h"
-#include "back_dat.h"
-
 #include <stdio.h>
 #include <stdint.h>
 #include "uart.h"
@@ -16,6 +13,9 @@
 
 /* Drivers */
 #include "i2c_ds1621.h"
+
+#include "bluetooth.h"
+#include "back_dat.h"
 
 static uint8_t fsm_state = 0;		/**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
