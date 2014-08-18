@@ -77,7 +77,7 @@ void ble_dts_update_handler(uint16_t data)
 
 /**@brief    Function for handling the data from the Nordic UART Service.
  */
-void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
+static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
 {
 }
 
@@ -222,10 +222,10 @@ static void conn_params_error_handler(uint32_t nrf_error)
 static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
 	dm_ble_evt_handler(p_ble_evt);
-	ble_conn_params_on_ble_evt(p_ble_evt);
 	ble_bas_on_ble_evt(&m_bas, p_ble_evt);
 	ble_hrs_on_ble_evt(&m_dts, p_ble_evt);
 	ble_nus_on_ble_evt(&m_nus, p_ble_evt);
+	ble_conn_params_on_ble_evt(p_ble_evt);
 	on_ble_evt(p_ble_evt);  
 
 }
@@ -268,9 +268,6 @@ static void sys_evt_dispatch(uint32_t sys_evt)
 void ble_stack_init(void)
 {
     uint32_t err_code;
-
-    // Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
 
     // Enable BLE stack 
     ble_enable_params_t ble_enable_params;

@@ -96,6 +96,13 @@ int main(void)
 {
 
 	uint32_t err_code;
+	uint32_t rst_reas;	/**< Power reset reason */
+	
+	// Scheduler
+	scheduler_init();
+	
+	// Initialize the SoftDevice handler module.
+    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
 
 	/** @note In the very first power cycle (reset or battery change),
 	system will go into off mode directly and set input sense on a button.
@@ -104,41 +111,38 @@ int main(void)
 	/** @note Unless cleared, NRF_POWER->RESETREAS is cumulative. 
 	A field is cleared by writing ‘1’ to it. If none of the reset sources are 
 	flagged, it indicates that the chip was reset from the on-chip reset generator. */
+	
+	sd_power_reset_reason_get(&rst_reas);
 
-//	if ((NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk))
-//    {
-//		NRF_POWER->RESETREAS = 0;	/**< Important! Clear reset reason register */
-//		
-//		/* set GPIO configuration and enable GPIOTE PORT event */
-//		gpiote_init();
+	if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
+    {
+		/* Important! Clear reset reason register */
+		sd_power_reset_reason_clr(
+			POWER_RESETREAS_RESETPIN_Msk
+		);	
+		
+		/* set GPIO configuration and enable GPIOTE PORT event */
+		timers_init();
+		gpiote_init();
+		buttons_init();
 
-//		// Configure buttons with sense level low as wakeup source.
-//		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
-//								 BUTTON_PULL,
-//								 NRF_GPIO_PIN_SENSE_LOW);
+		// Configure buttons with sense level low as wakeup source.
+		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
+								 BUTTON_PULL,
+								 NRF_GPIO_PIN_SENSE_LOW);
 
-//		/* Go to systemoff, wait for button press */
-//		NRF_POWER->SYSTEMOFF = 1;
-//		return 0;
+		/* Go to systemoff, wait for button press */
+		sd_power_system_off();
 
-//    }
+    }
 
-// NRF_SUCCESS
-
-	// Persistent storage module.
-	err_code = pstorage_init();
+	/* Peripherals Initialization */
+	err_code = pstorage_init();	// Persistent storage module.
 	APP_ERROR_CHECK(err_code);
 
-	// Scheduler
-	scheduler_init();
-
-	// Softdevice
-	ble_stack_init();
-
-	// UART
-	uart_init();
-
-	// Initialization
+	ble_stack_init();			// Enable BLE stack
+	uart_init();				// Enable UART debug ability
+	
 	DEBUG_ASSERT("Initializing peripherals...\r\n");
 	leds_init();
 	timers_init();
@@ -147,7 +151,7 @@ int main(void)
 	adc_init();
 	ds1621_init();
 
-	// BLE Initialization
+	/* BLE Initialization */
 	DEBUG_ASSERT("Initializing BLE...\r\n");
 	device_manager_init();
 	gap_params_init();
@@ -155,13 +159,11 @@ int main(void)
 	advertising_init();
 	conn_params_init();
 
-	// Start execution
+	/* Start Advertising */
 	DEBUG_ASSERT("Start advertising...\r\n");
 	advertising_start();
-	
-	DEBUG_PF("Reset Reason: %x\r\n", NRF_POWER->RESETREAS);
 
-	// Enter main loop
+	/* Enter main loop */
 	for (;;)
 	{
 		err_code = sd_app_evt_wait();

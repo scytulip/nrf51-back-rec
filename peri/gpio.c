@@ -34,8 +34,6 @@ void buttons_init(void)
     static app_button_cfg_t buttons[] =
     {
         {WAKEUP_BUTTON_PIN, APP_BUTTON_ACTIVE_LOW, BUTTON_PULL, NULL},
-        // YOUR_JOB: Add other buttons to be used:
-        // {MY_BUTTON_PIN,     false, BUTTON_PULL, button_event_handler}
     };
 
     APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
