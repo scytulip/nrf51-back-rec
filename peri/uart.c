@@ -31,11 +31,6 @@ int fputc(int c, FILE *f)
 			while (uart_tx_busy);
 			break;
 		}
-		case UART_BLE_OUT :
-		{
-			/** @note Send data through Nordic UART BLE service (experimental) */
-			
-		}
 	}
 	return 0;
 }

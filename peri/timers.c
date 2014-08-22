@@ -1,11 +1,13 @@
 #include "adc.h"
 #include "timers.h"
+#include "gpio.h"
 #include "back_dat.h"
 
 #include "app_timer.h"
 
 static app_timer_id_t	m_battery_timer_id;			/**< Battery timer. */
 static app_timer_id_t	m_data_report_timer_id;		/**< Data report timer. */
+static app_timer_id_t	m_blinky_led_timer_id;		/**< LED control timer. */
 
 /*****************************************************************************
 * Initilization Functions
@@ -33,6 +35,12 @@ void timers_init(void)
 								APP_TIMER_MODE_REPEATED,
 								data_report_timeout_handler);
 	APP_ERROR_CHECK(err_code);
+	
+	// Timer for blinky LED
+	err_code = app_timer_create(&m_blinky_led_timer_id,
+								APP_TIMER_MODE_REPEATED,
+								blinky_led_timeout_handler);
+	APP_ERROR_CHECK(err_code);
 }
 
 /*****************************************************************************
@@ -48,8 +56,6 @@ void ble_timers_start(void)
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 	
-	err_code = app_timer_start(m_data_report_timer_id, DATA_REPORT_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 /**@brief Function for stoppingtimers (used for BLE services).
@@ -61,8 +67,21 @@ void ble_timers_stop(void)
 	err_code = app_timer_stop(m_battery_timer_id);
     APP_ERROR_CHECK(err_code);
 	
-	err_code = app_timer_stop(m_data_report_timer_id);
-    APP_ERROR_CHECK(err_code);
 }
+
+/**@brief Function for starting global timers (timers for flashing LED, data recording, etc.).
+*/
+void glb_timers_start(void)
+{
+    uint32_t err_code;
+
+	err_code = app_timer_start(m_data_report_timer_id, DATA_REPORT_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+	
+	err_code = app_timer_start(m_blinky_led_timer_id, BLINKY_LED_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+	
+}
+
 
 

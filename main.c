@@ -98,6 +98,11 @@ int main(void)
 	uint32_t err_code;
 	uint32_t rst_reas;	/**< Power reset reason */
 	
+	//Initialize LEDS
+	leds_init();
+	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO); // INIT indicator
+	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+	
 	// Scheduler
 	scheduler_init();
 	
@@ -109,11 +114,12 @@ int main(void)
 	This button is used to toggle system on/off (virtual power switch). */
 	
 	/** @note Unless cleared, NRF_POWER->RESETREAS is cumulative. 
-	A field is cleared by writing ‘1’ to it. If none of the reset sources are 
+	A field is cleared by writing '1' to it. If none of the reset sources are 
 	flagged, it indicates that the chip was reset from the on-chip reset generator. */
 	
 	sd_power_reset_reason_get(&rst_reas);
 
+	if (!(rst_reas & POWER_RESETREAS_SREQ_Msk)) { // For Debug interface
 	if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
     {
 		/* Important! Clear reset reason register */
@@ -121,21 +127,20 @@ int main(void)
 			POWER_RESETREAS_RESETPIN_Msk
 		);	
 		
-		/* set GPIO configuration and enable GPIOTE PORT event */
-		timers_init();
-		gpiote_init();
-		buttons_init();
-
-		// Configure buttons with sense level low as wakeup source.
+		/* Configure buttons with sense level low as wakeup source. */
 		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
 								 BUTTON_PULL,
 								 NRF_GPIO_PIN_SENSE_LOW);
+		
+		
+		nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+		nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 
 		/* Go to systemoff, wait for button press */
 		sd_power_system_off();
 
-    }
-
+    } }
+	
 	/* Peripherals Initialization */
 	err_code = pstorage_init();	// Persistent storage module.
 	APP_ERROR_CHECK(err_code);
@@ -144,10 +149,10 @@ int main(void)
 	uart_init();				// Enable UART debug ability
 	
 	DEBUG_ASSERT("Initializing peripherals...\r\n");
-	leds_init();
 	timers_init();
 	gpiote_init();
 	buttons_init();
+	back_data_init();
 	adc_init();
 	ds1621_init();
 
@@ -158,11 +163,16 @@ int main(void)
 	services_init();
 	advertising_init();
 	conn_params_init();
+	
+	/* Indicate the end of initialization */
+	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 
 	/* Start Advertising */
 	DEBUG_ASSERT("Start advertising...\r\n");
-	advertising_start();
-
+	glb_timers_start();
+	//advertising_start();
+	
 	/* Enter main loop */
 	for (;;)
 	{
@@ -172,3 +182,5 @@ int main(void)
 	}
 
 }
+//NRF_SUCCESS
+

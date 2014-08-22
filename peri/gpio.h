@@ -16,11 +16,21 @@
 #include "timers.h"
  
  // BUTTONS & LEDS
-#define WAKEUP_BUTTON_PIN               BUTTON_0                                    /**< Button used to wake up the application. */
-#define ADVERTISING_LED_PIN_NO          LED_0                                       /**< Is on when device is advertising. */
-#define CONNECTED_LED_PIN_NO            LED_1                                       /**< Is on when device has connected. */
+#define WAKEUP_BUTTON_PIN               BUTTON_0                                    /**< Button used to 1. wake up the application, 2. sending instant data. */
+#define SENDAT_BUTTON_PIN				BUTTON_1									/**< Button used to send saved data. */
+
+#define ADVERTISING_LED_PIN_NO          LED_0                                       /**< Is blinky when device is recording data in background. 
+																						 Is on when device is advertising. */
+#define CONNECTED_LED_PIN_NO            LED_1                                       /**< Is blinky when device memory is full. 
+																						 Is on when device has connected. */
+																						 
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)    /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
+#define BUTTON_LONGPRESS_DELAY          APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER)    /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define APP_GPIOTE_MAX_USERS            1                                           /**< Maximum number of users of the GPIOTE handler. */
+
+
+/**@brief Timer handler for blinky LED signal */
+void blinky_led_timeout_handler(void *p_context);
 
 /**@brief Function for the LEDs initialization.
  *

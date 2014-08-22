@@ -17,7 +17,26 @@
 #include "bluetooth.h"
 #include "back_dat.h"
 
-static uint8_t fsm_state = 0;		/**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
+static uint32_t sys_state;			/**< System function state. */
+static uint32_t fsm_state = 0;		/**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
+
+/*****************************************************************************
+* Utility Functions
+*****************************************************************************/
+
+/**@brief Set system function state. 
+ */
+void set_sys_state( uint32_t state )
+{
+	sys_state = state;
+}
+
+/**@brief Get system function state. 
+ */
+uint32_t get_sys_state(void)
+{
+	return sys_state;
+}
 
 /*****************************************************************************
 * Event Handlers
@@ -54,8 +73,22 @@ void data_report_timeout_handler(void *p_context)
 			ds1621_temp_read(&temp, &temp_frac);
 			ble_dts_update_handler((uint16_t) temp); 
 			break;
-		} 
+		}
+		default:
+			break;
 	}
 	fsm_state = (fsm_state + 1) % 2;
 	
 }
+
+/*****************************************************************************
+* Initialization Functions
+*****************************************************************************/
+
+/**@brief Initializing system function state. 
+ */
+void back_data_init(void)
+{
+	sys_state = SYS_DATA_RECORDING;
+}
+

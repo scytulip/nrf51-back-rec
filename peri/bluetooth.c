@@ -56,23 +56,16 @@ void system_off_mode(void)
  * @details This function sends instant data through Heart Rate Service.
  */
 void ble_dts_update_handler(uint16_t data)
-{
-	uint32_t err_code;
-	
+{	
+	// Update data through BLE HRS
 	ble_hrs_heart_rate_measurement_send(&m_dts, data);
 	
-	if (
-			(err_code != NRF_SUCCESS)
-			&&
-			(err_code != NRF_ERROR_INVALID_STATE)
-			&&
-			(err_code != BLE_ERROR_NO_TX_BUFFERS)
-			&&
-			(err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-	)
-	{
-		APP_ERROR_HANDLER(err_code);
-	}
+	char str[64];
+	
+	// Update data through BLE UART
+	sprintf(str, "Temp: %d", data);
+	ble_nus_send_string( &m_nus, (uint8_t *)str, strlen(str) );
+	
 }
 
 /**@brief    Function for handling the data from the Nordic UART Service.
