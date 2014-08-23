@@ -27,7 +27,7 @@ static uint32_t fsm_state = 0;		/**< State of the FSM, 0 - Start conversion, 1 -
 /**@brief Set system function state. 
  */
 void set_sys_state( uint32_t state )
-{
+{	
 	sys_state = state;
 }
 

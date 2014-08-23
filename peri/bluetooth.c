@@ -3,6 +3,7 @@
 #include "device_manager.h"
 #include "pstorage.h"
 #include "nrf_gpio.h"
+#include "nrf_delay.h"
 
 #include "ble_gap.h"
 #include "ble_hci.h"
@@ -17,12 +18,14 @@
 #include "timers.h"
 #include "gpio.h"
 #include "bluetooth.h"
+#include "back_dat.h"
+
 
 // Global Variables
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection */
 static ble_bas_t               			m_bas;           							/**< Structure used to identify the battery service */
 static ble_hrs_t						m_dts;										/**< Structure used to report data instantly */
-static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
+static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service */
 static dm_application_instance_t        m_app_handle;								/**< Application identifier allocated by device manager */
 static bool								m_memory_access_in_progress;				/**< Status of Flash */
 
@@ -47,8 +50,22 @@ void system_off_mode(void)
         return;
     }
 
-    err_code = sd_power_system_off();
+	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+					
+	/* Configure buttons with sense level low as wakeup source. */
+	nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
+							 BUTTON_PULL,
+							 NRF_GPIO_PIN_SENSE_LOW);
+	
+	nrf_delay_ms(200);
+						
+	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+	
+	err_code = sd_power_system_off();
     APP_ERROR_CHECK(err_code);
+					
 }
 
 /**@brief Function for updating instant data.
@@ -148,14 +165,13 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
             {
                 nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-
-                // Configure buttons with sense level low as wakeup source.
-                nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
-                                         BUTTON_PULL,
-                                         NRF_GPIO_PIN_SENSE_LOW);
-                
-                // Go to system-off mode (this function will not return; wakeup will cause a reset)                
-                system_off_mode();
+				nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
+				
+				// Stop advertising if not connected in limited time
+				set_sys_state(SYS_DATA_RECORDING);
+				
+				// Go to system-off mode (this function will not return; wakeup will cause a reset)                
+				//system_off_mode();
             }
             break;
 			
@@ -483,7 +499,7 @@ void device_manager_init(void)
 }
 
 /*****************************************************************************
-* Start Functions
+* Operation
 *****************************************************************************/
 
 /**@brief Function for starting advertising.
@@ -492,6 +508,8 @@ void advertising_start(void)
 {
     uint32_t             err_code;
     ble_gap_adv_params_t adv_params;
+	
+	set_sys_state(SYS_BLE_DATA_INSTANT);		// System enter instant data report mode
 
     // Start advertising
     memset(&adv_params, 0, sizeof(adv_params));
@@ -504,7 +522,22 @@ void advertising_start(void)
 
     err_code = sd_ble_gap_adv_start(&adv_params);
     APP_ERROR_CHECK(err_code);
+	
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 
+}
+
+/**@brief Function for disconnecting BLE link.
+ */
+void ble_connection_disconnect(void)
+{
+	uint32_t err_code;
+	if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
+	{
+		err_code = sd_ble_gap_disconnect(m_conn_handle,
+										BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+		APP_ERROR_CHECK(err_code);
+	}
 }
 

@@ -29,8 +29,8 @@
 #define APP_GPIOTE_MAX_USERS            1                                           /**< Maximum number of users of the GPIOTE handler. */
 
 
-/**@brief Timer handler for blinky LED signal */
-void blinky_led_timeout_handler(void *p_context);
+/**@brief Timer handler for blinky LED signal and button event */
+void blinky_led_button_press_timeout_handler(void *p_context);
 
 /**@brief Function for the LEDs initialization.
  *

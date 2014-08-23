@@ -41,6 +41,10 @@
 #define SEC_PARAM_MIN_KEY_SIZE          7                                           /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE          16                                          /**< Maximum encryption key size. */
 
+/**@brief Function for putting the chip in System OFF Mode
+ */
+void system_off_mode(void);
+
 /**@brief Function for updating instant data.
  *
  * @details This function sends instant data through Heart Rate Service.
@@ -91,7 +95,9 @@ void device_manager_init(void);
  */
 void advertising_start(void);
 
-
+/**@brief Function for disconnecting BLE link.
+ */
+void ble_connection_disconnect(void);
 
 #endif
 

@@ -60,6 +60,9 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
 
 	nrf_gpio_pin_set(LED_0);
 	nrf_gpio_pin_set(LED_1);
+	
+	DEBUG_PF("Error Code: %d \r\n Error Line #: %d \r\n Error File: %s \r\n", 
+			error_code, line_num, p_file_name);
 
 	ble_debug_assert_handler(error_code, line_num, p_file_name);
 
@@ -108,6 +111,10 @@ int main(void)
 	
 	// Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
+	
+	// Initialize persistent storage module.
+	err_code = pstorage_init();	
+	APP_ERROR_CHECK(err_code);
 
 	/** @note In the very first power cycle (reset or battery change),
 	system will go into off mode directly and set input sense on a button.
@@ -127,24 +134,11 @@ int main(void)
 			POWER_RESETREAS_RESETPIN_Msk
 		);	
 		
-		/* Configure buttons with sense level low as wakeup source. */
-		nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
-								 BUTTON_PULL,
-								 NRF_GPIO_PIN_SENSE_LOW);
+		system_off_mode();
 		
-		
-		nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-		nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-
-		/* Go to systemoff, wait for button press */
-		sd_power_system_off();
-
     } }
-	
-	/* Peripherals Initialization */
-	err_code = pstorage_init();	// Persistent storage module.
-	APP_ERROR_CHECK(err_code);
 
+	/* Peripherals Initialization */
 	ble_stack_init();			// Enable BLE stack
 	uart_init();				// Enable UART debug ability
 	
@@ -171,7 +165,6 @@ int main(void)
 	/* Start Advertising */
 	DEBUG_ASSERT("Start advertising...\r\n");
 	glb_timers_start();
-	//advertising_start();
 	
 	/* Enter main loop */
 	for (;;)

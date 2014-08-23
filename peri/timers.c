@@ -39,7 +39,7 @@ void timers_init(void)
 	// Timer for blinky LED
 	err_code = app_timer_create(&m_blinky_led_timer_id,
 								APP_TIMER_MODE_REPEATED,
-								blinky_led_timeout_handler);
+								blinky_led_button_press_timeout_handler);
 	APP_ERROR_CHECK(err_code);
 }
 
