@@ -14,6 +14,10 @@
 #include "nrf51.h"
 #include "i2c_ds1621.h"
 
+#define __DATA_TYPE	uint8_t										/**< Background recording data type. */
+#define BACK_DATA_BLOCK_SIZE	128 * sizeof(__DATA_TYPE)		/**< Size of each pstorage FLASH block (128 data points). */
+#define BACK_DATA_BLOCK_COUNT	256								/**< Total No. of pstorage FLASH blocks (256 x 128 = 32K data points). */
+
 /* System function state */
 enum {
 	SYS_DATA_RECORDING,
@@ -38,6 +42,10 @@ uint32_t get_sys_state(void);
 /**@brief Initializing system function state. 
  */
 void back_data_init(void);
+
+/**@brief Clear all saved data in FLASH
+ */
+void back_data_clear_storage(void);
 
 #endif
 

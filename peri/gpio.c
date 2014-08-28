@@ -32,10 +32,16 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
 			if (button_action == APP_BUTTON_RELEASE && 
 				get_sys_state() == SYS_DATA_RECORDING)
 			{
-				if (button_count > 20) 			
+				if (button_count > 20) 		
+				{
+					glb_timers_stop();
 					system_off_mode();			// Long press to shut down.
-				else							
+				}
+				else
+				{
+					set_sys_state(SYS_BLE_DATA_INSTANT);
 					advertising_start();		// Short press to enter instant data report mode.
+				}
 				button_count = 0;
 				wakeup_pushed = false;
 			} else
@@ -43,7 +49,11 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
 				get_sys_state() == SYS_BLE_DATA_INSTANT)
 			{
 				ble_connection_disconnect();						// Short press to disconnect BLE link.
-				if (button_count > 20) 	system_off_mode();			// Long press to shutdown.
+				if (button_count > 20)
+				{
+					glb_timers_stop();
+					system_off_mode();			// Long press to shutdown.
+				}
 				button_count = 0;
 				wakeup_pushed = false;
 			}

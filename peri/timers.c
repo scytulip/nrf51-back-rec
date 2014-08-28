@@ -58,7 +58,7 @@ void ble_timers_start(void)
 	
 }
 
-/**@brief Function for stoppingtimers (used for BLE services).
+/**@brief Function for stopping timers (used for BLE services).
 */
 void ble_timers_stop(void)
 {
@@ -81,6 +81,19 @@ void glb_timers_start(void)
 	err_code = app_timer_start(m_blinky_led_timer_id, BLINKY_LED_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 	
+}
+
+/**@brief Function for stoping global timers (timers for flashing LED, data recording, etc.).
+*/
+void glb_timers_stop(void)
+{
+	uint32_t err_code;
+	
+	err_code = app_timer_stop(m_data_report_timer_id);
+    APP_ERROR_CHECK(err_code);
+	
+	err_code = app_timer_stop(m_blinky_led_timer_id);
+    APP_ERROR_CHECK(err_code);
 }
 
 

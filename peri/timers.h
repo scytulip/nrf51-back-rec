@@ -41,6 +41,10 @@ void ble_timers_stop(void);
 */
 void glb_timers_start(void);
 
+/**@brief Function for stoping global timers (timers for flashing LED, data recording, etc.).
+*/
+void glb_timers_stop(void);
+
 #endif
 
 /** @} */

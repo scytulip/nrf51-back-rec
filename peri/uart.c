@@ -132,6 +132,5 @@ void uart_init(void)
     APP_ERROR_CHECK(err_code);
 	
 	NRF_UART0->TASKS_STARTTX = 1;
-	
 }
 

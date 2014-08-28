@@ -99,6 +99,9 @@ void advertising_start(void);
  */
 void ble_connection_disconnect(void);
 
+/**@brief Initialize system event handler. */
+void sys_evt_init(void);
+
 #endif
 
 /** @} */

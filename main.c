@@ -61,8 +61,8 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p
 	nrf_gpio_pin_set(LED_0);
 	nrf_gpio_pin_set(LED_1);
 	
-	DEBUG_PF("Error Code: %d \r\n Error Line #: %d \r\n Error File: %s \r\n", 
-			error_code, line_num, p_file_name);
+	//DEBUG_PF("Error Code: %d\r\nError Line #: %d\r\nError File: %s\r\n", 
+	//		error_code, line_num, p_file_name);
 
 	ble_debug_assert_handler(error_code, line_num, p_file_name);
 
@@ -112,9 +112,17 @@ int main(void)
 	// Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
 	
+	/** @note Register softdevice system event handler before 
+	any pstorage operation to avoid deadlock. */
+	
+	// Register softdevice system event handler
+	sys_evt_init();
+	
+	// Enable UART debug ability
+	uart_init();
+	
 	// Initialize persistent storage module.
-	err_code = pstorage_init();	
-	APP_ERROR_CHECK(err_code);
+	back_data_init();
 
 	/** @note In the very first power cycle (reset or battery change),
 	system will go into off mode directly and set input sense on a button.
@@ -126,27 +134,29 @@ int main(void)
 	
 	sd_power_reset_reason_get(&rst_reas);
 
-	if (!(rst_reas & POWER_RESETREAS_SREQ_Msk)) { // For Debug interface
-	if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
+	//if (!(rst_reas & POWER_RESETREAS_SREQ_Msk)) { // For Debug interface
+	//if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
     {
 		/* Important! Clear reset reason register */
 		sd_power_reset_reason_clr(
 			POWER_RESETREAS_RESETPIN_Msk
-		);	
+		);
+
+		/* Clear all data. */
+		back_data_clear_storage();
 		
+		/* Shut down */
 		system_off_mode();
 		
-    } }
+    } //}
 
 	/* Peripherals Initialization */
 	ble_stack_init();			// Enable BLE stack
-	uart_init();				// Enable UART debug ability
 	
 	DEBUG_ASSERT("Initializing peripherals...\r\n");
 	timers_init();
 	gpiote_init();
 	buttons_init();
-	back_data_init();
 	adc_init();
 	ds1621_init();
 
@@ -161,9 +171,6 @@ int main(void)
 	/* Indicate the end of initialization */
 	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-
-	/* Start Advertising */
-	DEBUG_ASSERT("Start advertising...\r\n");
 	glb_timers_start();
 	
 	/* Enter main loop */
@@ -176,4 +183,3 @@ int main(void)
 
 }
 //NRF_SUCCESS
-

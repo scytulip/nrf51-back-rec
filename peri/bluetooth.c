@@ -1,9 +1,11 @@
 #include "nordic_common.h"
 #include "nrf51.h"
+#include "nrf.h"
 #include "device_manager.h"
 #include "pstorage.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
+#include "app_util_platform.h"
 
 #include "ble_gap.h"
 #include "ble_hci.h"
@@ -19,6 +21,7 @@
 #include "gpio.h"
 #include "bluetooth.h"
 #include "back_dat.h"
+#include "uart.h"
 
 
 // Global Variables
@@ -39,20 +42,18 @@ void system_off_mode(void)
 {
     uint32_t err_code;
     uint32_t count;
-    
-    // Verify if there is any flash access pending
-    err_code = pstorage_access_status_get(&count);
-    APP_ERROR_CHECK(err_code);
-    
-    if (count != 0)
+	
+    // Wait if there is any flash access pending
+	do
     {
-        m_memory_access_in_progress = true;
-        return;
-    }
-
+		m_memory_access_in_progress = true;
+		err_code = pstorage_access_status_get(&count);
+		APP_ERROR_CHECK(err_code);
+    } while(count);
+	
 	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
 	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
-					
+    
 	/* Configure buttons with sense level low as wakeup source. */
 	nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
 							 BUTTON_PULL,
@@ -248,8 +249,12 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
  */
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
-    pstorage_sys_event_handler(sys_evt);
+	if ((sys_evt == NRF_EVT_FLASH_OPERATION_SUCCESS) ||
+            (sys_evt == NRF_EVT_FLASH_OPERATION_ERROR)) {
+		pstorage_sys_event_handler(sys_evt);
+    }
 	
+	/*
 	switch(sys_evt)
     {
         case NRF_EVT_FLASH_OPERATION_SUCCESS:
@@ -264,6 +269,7 @@ static void sys_evt_dispatch(uint32_t sys_evt)
             // No implementation needed.
             break;
     }
+	*/
 }
 
 /*****************************************************************************
@@ -288,10 +294,7 @@ void ble_stack_init(void)
     // Register with the SoftDevice handler module for BLE events.
     err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
     APP_ERROR_CHECK(err_code);
-    
-    // Register with the SoftDevice handler module for BLE events.
-    err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
-    APP_ERROR_CHECK(err_code);
+	
 }
 
 /**@brief Function for the GAP initialization.
@@ -502,14 +505,22 @@ void device_manager_init(void)
 * Operation
 *****************************************************************************/
 
+/**@brief Initialize system event handler. */
+void sys_evt_init(void)
+{
+	uint32_t err_code;
+	
+	// Register with the SoftDevice handler module for system events.
+    err_code = softdevice_sys_evt_handler_set(sys_evt_dispatch);
+    APP_ERROR_CHECK(err_code);
+}
+
 /**@brief Function for starting advertising.
  */
 void advertising_start(void)
 {
     uint32_t             err_code;
     ble_gap_adv_params_t adv_params;
-	
-	set_sys_state(SYS_BLE_DATA_INSTANT);		// System enter instant data report mode
 
     // Start advertising
     memset(&adv_params, 0, sizeof(adv_params));

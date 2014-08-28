@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define UART_DEBUG_ENABLE 1
+//#define UART_DEBUG_ENABLE 1
 
 #define RX_PIN_NO  		11
 #define TX_PIN_NO  		9
@@ -46,7 +46,7 @@ void uart_init(void);
 #ifdef UART_DEBUG_ENABLE
 	#define DEBUG_PF(STR,...) printf(STR, __VA_ARGS__);
 #else
-	#define DEBUG_PF(STR)
+	#define DEBUG_PF(STR,...)
 #endif
 
 
