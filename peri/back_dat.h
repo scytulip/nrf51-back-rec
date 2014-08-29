@@ -10,6 +10,7 @@
 #define CUSTOM_BKDAT_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "nrf51.h"
 #include "i2c_ds1621.h"
@@ -36,12 +37,24 @@ void data_report_timeout_handler(void *p_context);
 void set_sys_state( uint32_t state );
 
 /**@brief Get system function state. 
+ *
+ * @retval Current system state.
  */
 uint32_t get_sys_state(void);
 
 /**@brief Initializing system function state. 
  */
 void back_data_init(void);
+
+///**@brief Set the flag of "flash operation in progress."
+// */
+//void set_flash_access(void);
+
+///**@brief Get flash operation status. 
+// *
+// * @retval True if flash operation is in process.
+// */
+//bool is_flash_access(void);
 
 /**@brief Clear all saved data in FLASH
  */

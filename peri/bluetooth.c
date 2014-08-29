@@ -30,7 +30,6 @@ static ble_bas_t               			m_bas;           							/**< Structure used to
 static ble_hrs_t						m_dts;										/**< Structure used to report data instantly */
 static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service */
 static dm_application_instance_t        m_app_handle;								/**< Application identifier allocated by device manager */
-static bool								m_memory_access_in_progress;				/**< Status of Flash */
 
 /*****************************************************************************
 * Event Handlers & Dispatches
@@ -43,23 +42,24 @@ void system_off_mode(void)
     uint32_t err_code;
     uint32_t count;
 	
+	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+	
     // Wait if there is any flash access pending
 	do
     {
-		m_memory_access_in_progress = true;
+		app_sched_execute();
 		err_code = pstorage_access_status_get(&count);
 		APP_ERROR_CHECK(err_code);
     } while(count);
-	
-	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
-	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
     
+	nrf_delay_ms(200);
+	
 	/* Configure buttons with sense level low as wakeup source. */
 	nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
 							 BUTTON_PULL,
 							 NRF_GPIO_PIN_SENSE_LOW);
 	
-	nrf_delay_ms(200);
 						
 	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
@@ -240,7 +240,7 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 
 }
 
-/**@brief Function for dispatching a system event to interested modules.
+/**@brief Function for dispatching a system event to interested modules (mainly pstorage operation).
  *
  * @details This function is called from the System event interrupt handler after a system
  *          event has been received.
@@ -253,23 +253,6 @@ static void sys_evt_dispatch(uint32_t sys_evt)
             (sys_evt == NRF_EVT_FLASH_OPERATION_ERROR)) {
 		pstorage_sys_event_handler(sys_evt);
     }
-	
-	/*
-	switch(sys_evt)
-    {
-        case NRF_EVT_FLASH_OPERATION_SUCCESS:
-        case NRF_EVT_FLASH_OPERATION_ERROR:
-            if (m_memory_access_in_progress)
-            {
-                m_memory_access_in_progress = false;
-                system_off_mode();
-            }
-            break;
-        default:
-            // No implementation needed.
-            break;
-    }
-	*/
 }
 
 /*****************************************************************************
@@ -291,7 +274,7 @@ void ble_stack_init(void)
     err_code = sd_ble_enable(&ble_enable_params);
     APP_ERROR_CHECK(err_code);
 	
-    // Register with the SoftDevice handler module for BLE events.
+	// Register with the SoftDevice handler module for BLE events.
     err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
     APP_ERROR_CHECK(err_code);
 	

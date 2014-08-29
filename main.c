@@ -109,21 +109,15 @@ int main(void)
 	// Scheduler
 	scheduler_init();
 	
-	// Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
-	
 	/** @note Register softdevice system event handler before 
 	any pstorage operation to avoid deadlock. */
 	
 	// Register softdevice system event handler
 	sys_evt_init();
 	
-	// Enable UART debug ability
-	uart_init();
+	// Initialize the SoftDevice handler module.
+    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, true); // Use scheduler
 	
-	// Initialize persistent storage module.
-	back_data_init();
-
 	/** @note In the very first power cycle (reset or battery change),
 	system will go into off mode directly and set input sense on a button.
 	This button is used to toggle system on/off (virtual power switch). */
@@ -133,9 +127,20 @@ int main(void)
 	flagged, it indicates that the chip was reset from the on-chip reset generator. */
 	
 	sd_power_reset_reason_get(&rst_reas);
+	
+	// Enable UART debug ability
+	uart_init();
 
-	//if (!(rst_reas & POWER_RESETREAS_SREQ_Msk)) { // For Debug interface
-	//if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
+	// Initialize persistent storage modules.
+	/** @note In `pstorage_init()`, swap area is erased. */
+	err_code = pstorage_init();	
+	APP_ERROR_CHECK(err_code);
+	
+	device_manager_init();
+	back_data_init();
+
+	if (!(rst_reas & POWER_RESETREAS_SREQ_Msk)) { // For Debug interface
+	if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
     {
 		/* Important! Clear reset reason register */
 		sd_power_reset_reason_clr(
@@ -148,7 +153,7 @@ int main(void)
 		/* Shut down */
 		system_off_mode();
 		
-    } //}
+    } }
 
 	/* Peripherals Initialization */
 	ble_stack_init();			// Enable BLE stack
@@ -162,7 +167,6 @@ int main(void)
 
 	/* BLE Initialization */
 	DEBUG_ASSERT("Initializing BLE...\r\n");
-	device_manager_init();
 	gap_params_init();
 	services_init();
 	advertising_init();

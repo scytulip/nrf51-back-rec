@@ -23,6 +23,7 @@ static uint32_t fsm_state = 0;					/**< State of the FSM, 0 - Start conversion, 
 
 static __DATA_TYPE data[2][BACK_DATA_BLOCK_SIZE] __attribute__((aligned(4)));	/**< Ram pages for data to be saved in FLASH. */
 static pstorage_handle_t m_base_handle;											/**< Identifier for allocated blocks. */
+//static bool m_flash_opblock;													/**< Indication of blocking Flash operation. */
 
 /*****************************************************************************
 * Utility Functions
@@ -46,11 +47,29 @@ void set_sys_state( uint32_t state )
 }
 
 /**@brief Get system function state. 
+ *
+ * @retval Current system state.
  */
 uint32_t get_sys_state(void)
 {
 	return sys_state;
 }
+
+///**@brief Set the flag of "flash operation in progress."
+// */
+//void set_flash_access(void)
+//{
+//	m_flash_opblock = true;
+//}
+//	
+///**@brief Get flash operation status. 
+// *
+// * @retval True if flash operation is in process.
+// */
+//bool is_flash_access(void)
+//{
+//	return m_flash_opblock;
+//}
 
 /**@brief Clear all saved data in FLASH
  */
@@ -130,7 +149,9 @@ static void pstorage_callback(pstorage_handle_t *  p_handle,
                                   uint8_t *            p_data,
                                   uint32_t             data_len)
 {
+	/** @note sys_evt_dispatch --> pstorage_sys_event_handler --> pstorage_callback */
 }
+
 /*****************************************************************************
 * Initialization Functions
 *****************************************************************************/
@@ -143,9 +164,6 @@ void back_data_init(void)
 	pstorage_module_param_t	storage_param;	/**< pstorage parameter for data recording. */
 	uint32_t err_code;
 	
-	err_code = pstorage_init();	
-	APP_ERROR_CHECK(err_code);
-	
 	storage_param.block_size = BACK_DATA_BLOCK_SIZE;
 	storage_param.block_count = BACK_DATA_BLOCK_COUNT;
 	storage_param.cb = pstorage_callback;
@@ -153,7 +171,7 @@ void back_data_init(void)
 	err_code = pstorage_register(&storage_param, &storage_handle);
 	APP_ERROR_CHECK(err_code);
 	
-	err_code = pstorage_block_identifier_get(&m_base_handle, 0, &storage_handle);
+	err_code = pstorage_block_identifier_get(&storage_handle, 0, &m_base_handle);
 	APP_ERROR_CHECK(err_code);
 	
 	set_sys_state(SYS_DATA_RECORDING);
