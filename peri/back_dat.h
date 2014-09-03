@@ -15,9 +15,25 @@
 #include "nrf51.h"
 #include "i2c_ds1621.h"
 
-#define __DATA_TYPE	uint8_t										/**< Background recording data type. */
-#define BACK_DATA_BLOCK_SIZE	128 * sizeof(__DATA_TYPE)		/**< Size of each pstorage FLASH block (128 data points). */
-#define BACK_DATA_BLOCK_COUNT	256								/**< Total No. of pstorage FLASH blocks (256 x 128 = 32K data points). */
+/** @note Data storage structure in FLASH
+
+  +-------------------------------------+
+  | BLOCK | BLOCK | ... | BLOCK | BLOCK |
+  +-------------------------------------+
+  |        \
+  +----------------------------------------------------------------+
+  | DATA | DATA | ... | DATA | CONFIG1 | CONFIG2 | ... | N/A | ... |
+  +----------------------------------------------------------------+
+  
+*/
+  
+
+#define __DATA_TYPE	uint8_t																		/**< Background recording data type. */
+#define BACK_DATA_BLOCK_SIZE			5 * sizeof(__DATA_TYPE)								/**< Size of each pstorage FLASH block (128 data points). */
+#define BACK_DATA_BLOCK_COUNT			4														/**< Total No. of pstorage FLASH blocks (256 x 128 = 32K data blocks). */
+#define BACK_DATA_NUM_PER_BLOCK			4														/**< Number of data points per block. */
+#define BACK_DATA_CONFIG1_IND			BACK_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE) + 0x0		/**< Offset address for CONFIG1 block. (in uint8_t) */
+#define BACK_DATA_CONFIG1_USE_Msk		0x1														/**< Mask for "this block is used." */
 
 /* System function state */
 enum {
@@ -46,19 +62,13 @@ uint32_t get_sys_state(void);
  */
 void back_data_init(void);
 
-///**@brief Set the flag of "flash operation in progress."
-// */
-//void set_flash_access(void);
-
-///**@brief Get flash operation status. 
-// *
-// * @retval True if flash operation is in process.
-// */
-//bool is_flash_access(void);
-
 /**@brief Clear all saved data in FLASH
  */
 void back_data_clear_storage(void);
+
+/**@brief Preserve data in FLASH before shut down
+ */
+void back_data_exit_preserve(void);
 
 #endif
 

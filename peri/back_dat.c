@@ -8,7 +8,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "uart.h"
+#include "timers.c"
 #include "nrf_delay.h"
 #include "pstorage.h"
 
@@ -22,8 +24,10 @@ static uint32_t sys_state;						/**< System function state. */
 static uint32_t fsm_state = 0;					/**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
 static __DATA_TYPE data[2][BACK_DATA_BLOCK_SIZE] __attribute__((aligned(4)));	/**< Ram pages for data to be saved in FLASH. */
+static uint32_t m_cur_page;														/**< Current page # for data. */
+static uint32_t m_cur_data_idx;													/**< Current index # for data. */
+static uint32_t m_cur_block_idx;												/**< Current block # of FLASH area for saving current data */
 static pstorage_handle_t m_base_handle;											/**< Identifier for allocated blocks. */
-//static bool m_flash_opblock;													/**< Indication of blocking Flash operation. */
 
 /*****************************************************************************
 * Utility Functions
@@ -38,11 +42,22 @@ void set_sys_state( uint32_t state )
 	switch(state)
 	{
 		case SYS_DATA_RECORDING:
-			DEBUG_ASSERT("SYS_DATA_RECORDING.\r\n"); break;
+		{
+			glb_timers_start();							// Start data recording timer
+			DEBUG_ASSERT("SYS_DATA_RECORDING.\r\n"); 
+			break;
+		}
 		case SYS_BLE_DATA_INSTANT:
-			DEBUG_ASSERT("SYS_BLE_DATA_INSTANT.\r\n"); break;
+		{
+			DEBUG_ASSERT("SYS_BLE_DATA_INSTANT.\r\n"); 
+			break;
+		}
 		case SYS_BLE_DATA_TRANSFER:
-			DEBUG_ASSERT("SYS_BLE_DATA_TRANSFER.\r\n"); break;
+		{
+			glb_timers_stop();							// Stop data recording timer
+			DEBUG_ASSERT("SYS_BLE_DATA_TRANSFER.\r\n"); 
+			break;
+		}
 	}
 }
 
@@ -54,22 +69,6 @@ uint32_t get_sys_state(void)
 {
 	return sys_state;
 }
-
-///**@brief Set the flag of "flash operation in progress."
-// */
-//void set_flash_access(void)
-//{
-//	m_flash_opblock = true;
-//}
-//	
-///**@brief Get flash operation status. 
-// *
-// * @retval True if flash operation is in process.
-// */
-//bool is_flash_access(void)
-//{
-//	return m_flash_opblock;
-//}
 
 /**@brief Clear all saved data in FLASH
  */
@@ -119,7 +118,7 @@ void data_report_timeout_handler(void *p_context)
 		default:
 			break;
 	}
-	fsm_state = (fsm_state + 1) % 2;
+	fsm_state = fsm_state ^ 0x1;
 	
 }
 
@@ -174,7 +173,14 @@ void back_data_init(void)
 	err_code = pstorage_block_identifier_get(&storage_handle, 0, &m_base_handle);
 	APP_ERROR_CHECK(err_code);
 	
-	set_sys_state(SYS_DATA_RECORDING);
+	m_cur_page = 0;
+	m_cur_data_idx = 0;
+}
+
+/**@brief Preserve data in FLASH before shut down
+ */
+void back_data_exit_preserve(void)
+{
 	
 }
 

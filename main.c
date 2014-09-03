@@ -147,7 +147,7 @@ int main(void)
 			POWER_RESETREAS_RESETPIN_Msk
 		);
 
-		/* Clear all data. */
+		/* Clear all FLASH data. */
 		back_data_clear_storage();
 		
 		/* Shut down */
@@ -173,9 +173,9 @@ int main(void)
 	conn_params_init();
 	
 	/* Indicate the end of initialization */
+	set_sys_state(SYS_DATA_RECORDING);
 	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-	glb_timers_start();
 	
 	/* Enter main loop */
 	for (;;)

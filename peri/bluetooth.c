@@ -42,8 +42,7 @@ void system_off_mode(void)
     uint32_t err_code;
     uint32_t count;
 	
-	nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
-	nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
+	back_data_exit_preserve();
 	
     // Wait if there is any flash access pending
 	do
@@ -59,7 +58,6 @@ void system_off_mode(void)
 	nrf_gpio_cfg_sense_input(WAKEUP_BUTTON_PIN,
 							 BUTTON_PULL,
 							 NRF_GPIO_PIN_SENSE_LOW);
-	
 						
 	nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
 	nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
