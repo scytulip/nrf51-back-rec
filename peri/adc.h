@@ -21,15 +21,15 @@
  * @retval     Result converted to millivolts.
  */
 #define ADC_RESULT_IN_MILLI_VOLTS(ADC_VALUE)\
-        ((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
-				
+    ((((ADC_VALUE) * ADC_REF_VOLTAGE_IN_MILLIVOLTS) / 255) * ADC_PRE_SCALING_COMPENSATION)
 
-/**@brief Function for activate one battery level measurement. 
+
+/**@brief Function for activate one battery level measurement.
  * @details This function will be activated each time the battery level measurement timer's
- *					timeout event occurs. When triggered, it enables the ADC to execute one conversion.
+ *                  timeout event occurs. When triggered, it enables the ADC to execute one conversion.
  */
-void battery_level_meas_timeout_handler(void * p_context);
-				
+void battery_level_meas_timeout_handler(void *p_context);
+
 /**@brief Function for handling the ADC interrupt.
  * @details  This function will fetch the conversion result from the ADC, convert the value into
  *           percentage and send it to peer.
@@ -39,7 +39,7 @@ void ADC_IRQHandler(void);
 /**@brief Function for initializing ADC operation
  */
 void adc_init(void);
-			
+
 #endif
 
 /** @} */

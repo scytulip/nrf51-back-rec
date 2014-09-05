@@ -38,7 +38,7 @@ static bool twi_master_write(uint8_t *data, uint8_t data_length, bool issue_stop
 
     while (true)
     {
-        while(NRF_TWI1->EVENTS_TXDSENT == 0 && (--timeout))
+        while (NRF_TWI1->EVENTS_TXDSENT == 0 && (--timeout))
         {
         }
 
@@ -56,15 +56,15 @@ static bool twi_master_write(uint8_t *data, uint8_t data_length, bool issue_stop
 
         NRF_TWI1->TXD = *data++;
     }
-    
-    if (issue_stop_condition) 
-    { 
-        NRF_TWI1->EVENTS_STOPPED = 0; 
-        NRF_TWI1->TASKS_STOP = 1; 
-        /* wait until stop sequence is sent and clear the EVENTS_STOPPED */ 
-        while(NRF_TWI1->EVENTS_STOPPED == 0) 
-        { 
-        } 
+
+    if (issue_stop_condition)
+    {
+        NRF_TWI1->EVENTS_STOPPED = 0;
+        NRF_TWI1->TASKS_STOP = 1;
+        /* wait until stop sequence is sent and clear the EVENTS_STOPPED */
+        while (NRF_TWI1->EVENTS_STOPPED == 0)
+        {
+        }
     }
 
     return true;
@@ -74,7 +74,7 @@ static bool twi_master_read(uint8_t *data, uint8_t data_length, bool issue_stop_
 {
     uint32_t timeout = MAX_TIMEOUT_LOOPS;   /* max loops to wait for RXDREADY event*/
 
-    if(data_length == 0)
+    if (data_length == 0)
     {
         /* gently return false for requesting data of size 0 */
         return false;
@@ -84,29 +84,30 @@ static bool twi_master_read(uint8_t *data, uint8_t data_length, bool issue_stop_
     if (data_length == 1)
     {
         //NRF_PPI->CH[0].TEP = (uint32_t)&NRF_TWI1->TASKS_STOP;
-        
+
         sd_ppi_channel_assign(0,
-                                     &(NRF_TWI1->EVENTS_BB),
-                                     &(NRF_TWI1->TASKS_STOP));
+                              &(NRF_TWI1->EVENTS_BB),
+                              &(NRF_TWI1->TASKS_STOP));
     }
     else
     {
         //NRF_PPI->CH[0].TEP = (uint32_t)&NRF_TWI1->TASKS_SUSPEND;
         sd_ppi_channel_assign(0,
-                                     &(NRF_TWI1->EVENTS_BB),
-                                     &(NRF_TWI1->TASKS_SUSPEND));
-        
+                              &(NRF_TWI1->EVENTS_BB),
+                              &(NRF_TWI1->TASKS_SUSPEND));
+
     }
     //NRF_PPI->CHENSET = PPI_CHENSET_CH0_Msk;
     sd_ppi_channel_enable_set(PPI_CHEN_CH0_Msk);
     NRF_TWI1->TASKS_STARTRX = 1;
-    while(true)
+    while (true)
     {
-        while((NRF_TWI1->EVENTS_RXDREADY == 0) && (--timeout))
-        {  //nrf_app_event_wait();
+        while ((NRF_TWI1->EVENTS_RXDREADY == 0) && (--timeout))
+        {
+            //nrf_app_event_wait();
         }
 
-        if(timeout == 0)
+        if (timeout == 0)
         {
             /* timeout before receiving event*/
             return false;
@@ -118,10 +119,10 @@ static bool twi_master_read(uint8_t *data, uint8_t data_length, bool issue_stop_
         /* configure PPI to stop TWI master before we get last BB event */
         if (--data_length == 1)
         {
-          //  NRF_PPI->CH[0].TEP = (uint32_t)&NRF_TWI1->TASKS_STOP;
+            //  NRF_PPI->CH[0].TEP = (uint32_t)&NRF_TWI1->TASKS_STOP;
             sd_ppi_channel_assign(0,
-                                     &(NRF_TWI1->EVENTS_BB),
-                                     &(NRF_TWI1->TASKS_STOP));
+                                  &(NRF_TWI1->EVENTS_BB),
+                                  &(NRF_TWI1->TASKS_STOP));
         }
 
         if (data_length == 0)
@@ -131,12 +132,13 @@ static bool twi_master_read(uint8_t *data, uint8_t data_length, bool issue_stop_
     }
 
     /* wait until stop sequence is sent and clear the EVENTS_STOPPED */
-    while(NRF_TWI1->EVENTS_STOPPED == 0)
-    {  //nrf_app_event_wait();
+    while (NRF_TWI1->EVENTS_STOPPED == 0)
+    {
+        //nrf_app_event_wait();
     }
     NRF_TWI1->EVENTS_STOPPED = 0;
-   
-  //  NRF_PPI->CHENCLR = PPI_CHENCLR_CH0_Msk;
+
+    //  NRF_PPI->CHENCLR = PPI_CHENCLR_CH0_Msk;
     sd_ppi_channel_enable_clr(PPI_CHEN_CH0_Msk);
     return true;
 }
@@ -166,7 +168,7 @@ static bool twi_master_clear_bus(void)
         bus_clear = false;
 
         // Clock max 18 pulses worst case scenario(9 for master to send the rest of command and 9 for slave to respond) to SCL line and wait for SDA come high
-        for (i=18; i--;)
+        for (i = 18; i--;)
         {
             TWI_SCL_LOW();
             TWI_DELAY();
@@ -187,30 +189,30 @@ static bool twi_master_clear_bus(void)
 bool twi_master_init(void)
 {
     /* To secure correct signal levels on the pins used by the TWI
-       master when the system is in OFF mode, and when the TWI master is 
+       master when the system is in OFF mode, and when the TWI master is
        disabled, these pins must be configured in the GPIO peripheral.
     */
-    uint32_t err_code=0;
-    NRF_GPIO->PIN_CNF[TWI_MASTER_CONFIG_CLOCK_PIN_NUMBER] = 
+    uint32_t err_code = 0;
+    NRF_GPIO->PIN_CNF[TWI_MASTER_CONFIG_CLOCK_PIN_NUMBER] =
         (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-      | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos)
-      | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)
-      | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos)
-      | (GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos);    
+        | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos)
+        | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)
+        | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos)
+        | (GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos);
 
-    NRF_GPIO->PIN_CNF[TWI_MASTER_CONFIG_DATA_PIN_NUMBER] = 
+    NRF_GPIO->PIN_CNF[TWI_MASTER_CONFIG_DATA_PIN_NUMBER] =
         (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-      | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos)
-      | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)
-      | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos)
-      | (GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos);    
+        | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos)
+        | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)
+        | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos)
+        | (GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos);
 
     NRF_TWI1->EVENTS_RXDREADY = 0;
     NRF_TWI1->EVENTS_TXDSENT = 0;
     NRF_TWI1->PSELSCL = TWI_MASTER_CONFIG_CLOCK_PIN_NUMBER;
     NRF_TWI1->PSELSDA = TWI_MASTER_CONFIG_DATA_PIN_NUMBER;
     NRF_TWI1->FREQUENCY = TWI_FREQUENCY_FREQUENCY_K100 << TWI_FREQUENCY_FREQUENCY_Pos;
-   
+
 
     /*
     NRF_PPI->CH[0].EEP = (uint32_t)&NRF_TWI1->EVENTS_BB;
@@ -223,7 +225,7 @@ bool twi_master_init(void)
 
     err_code = sd_ppi_channel_enable_clr(PPI_CHEN_CH0_Msk);
     ASSERT(err_code == NRF_SUCCESS);
-    
+
     NRF_TWI1->ENABLE = TWI_ENABLE_ENABLE_Enabled << TWI_ENABLE_ENABLE_Pos;
 
     return twi_master_clear_bus();

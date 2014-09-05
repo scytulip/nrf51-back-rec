@@ -24,41 +24,46 @@
   +----------------------------------------------------------------+
   | DATA | DATA | ... | DATA | CONFIG1 | CONFIG2 | ... | N/A | ... |
   +----------------------------------------------------------------+
-  
-*/
-  
 
-#define __DATA_TYPE	uint8_t																		/**< Background recording data type. */
-#define BACK_DATA_BLOCK_SIZE			5 * sizeof(__DATA_TYPE)								/**< Size of each pstorage FLASH block (128 data points). */
-#define BACK_DATA_BLOCK_COUNT			4														/**< Total No. of pstorage FLASH blocks (256 x 128 = 32K data blocks). */
-#define BACK_DATA_NUM_PER_BLOCK			4														/**< Number of data points per block. */
-#define BACK_DATA_CONFIG1_IND			BACK_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE) + 0x0		/**< Offset address for CONFIG1 block. (in uint8_t) */
-#define BACK_DATA_CONFIG1_USE_Msk		0x1														/**< Mask for "this block is used." */
+*/
+
+#define __DATA_TYPE uint8_t                                                             /**< Background recording data type. */
+#define BD_BLOCK_SIZE           8                                                       /**< Size of each pstorage FLASH block (in uint8_t). */
+#define BD_BLOCK_COUNT          4                                                       /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
+#define BD_DATA_NUM_PER_BLOCK   4                                                       /**< Number of data points per block. */
+#define BD_DATA_END_ADDR        BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE)             /**< End address of data segment in each block. */
+#define BD_CONFIG_BASE_ADDR     (BD_DATA_END_ADDR & 0x3) ? \
+                                (((BD_DATA_END_ADDR >> 0x2) + 1) << 0x2) : \
+                                (BD_DATA_END_ADDR)                                      /**< Base address for CONFIG blocks (in uint8_t, aligned to Word). */
+#define BD_CONFIG_NUM_PER_BLOCK 4                                                       /**< Number of config info per block (a multiple of 4 bytes). */
+#define BD_CONFIG1_OFFSET       0x0                                                     /**< Offset address for CONFIG1 block. */
+#define BD_CONFIG1_USE_Msk      0x1                                                     /**< Mask for "this block is used." */
 
 /* System function state */
-enum {
-	SYS_DATA_RECORDING,
-	SYS_BLE_DATA_INSTANT,
-	SYS_BLE_DATA_TRANSFER
+enum
+{
+    SYS_DATA_RECORDING,
+    SYS_BLE_DATA_INSTANT,
+    SYS_BLE_DATA_TRANSFER
 };
 
-/**@brief Function for send instant data. 
+/**@brief Function for send instant data.
  * @details This function will be activated each time the data report timer's
- *			timeout event occurs.
+ *          timeout event occurs.
  */
 void data_report_timeout_handler(void *p_context);
 
-/**@brief Set system function state. 
+/**@brief Set system function state.
  */
 void set_sys_state( uint32_t state );
 
-/**@brief Get system function state. 
+/**@brief Get system function state.
  *
  * @retval Current system state.
  */
 uint32_t get_sys_state(void);
 
-/**@brief Initializing system function state. 
+/**@brief Initializing system function state.
  */
 void back_data_init(void);
 

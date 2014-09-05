@@ -22,34 +22,34 @@
  *           percentage and send it to peer.
  */
 static void ADC_IRQ_handler(void *p_event_data, uint16_t event_size)
-{	
-	uint8_t     adc_result;
-	uint16_t    batt_lvl_in_milli_volts;
-	uint8_t     percentage_batt_lvl;
-	//uint32_t    err_code;
-	
-	adc_result = *(uint8_t *) p_event_data;
-	batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
-														DIODE_FWD_VOLT_DROP_MILLIVOLTS;
-	percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
+{
+    uint8_t     adc_result;
+    uint16_t    batt_lvl_in_milli_volts;
+    uint8_t     percentage_batt_lvl;
+    //uint32_t    err_code;
 
-	ble_bas_battery_level_update_handler(percentage_batt_lvl);
+    adc_result = *(uint8_t *) p_event_data;
+    batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) +
+                              DIODE_FWD_VOLT_DROP_MILLIVOLTS;
+    percentage_batt_lvl     = battery_level_in_percent(batt_lvl_in_milli_volts);
 
-	NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Disabled;
+    ble_bas_battery_level_update_handler(percentage_batt_lvl);
+
+    NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Disabled;
 }
 
-/**@brief Function for activate one battery level measurement. 
+/**@brief Function for activate one battery level measurement.
  * @details This function will be activated each time the battery level measurement timer's
- *					timeout event occurs. When triggered, it enables the ADC to execute one conversion.
+ *                  timeout event occurs. When triggered, it enables the ADC to execute one conversion.
  */
-void battery_level_meas_timeout_handler(void * p_context)
+void battery_level_meas_timeout_handler(void *p_context)
 {
-	uint32_t err_code;
-	
+    uint32_t err_code;
+
     UNUSED_PARAMETER(p_context);
-	  
+
     NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Enabled;
-	
+
     // Enable ADC interrupt
     err_code = sd_nvic_ClearPendingIRQ(ADC_IRQn);
     APP_ERROR_CHECK(err_code);
@@ -81,7 +81,7 @@ void adc_init(void)
                           (ADC_CONFIG_EXTREFSEL_None                  << ADC_CONFIG_EXTREFSEL_Pos);
     NRF_ADC->EVENTS_END = 0;
     NRF_ADC->ENABLE     = ADC_ENABLE_ENABLE_Disabled;
-		
+
     NRF_ADC->TASKS_STOP = 1;
 }
 
@@ -96,19 +96,19 @@ void adc_init(void)
 void ADC_IRQHandler(void)
 {
     uint32_t err_code;
-	uint8_t adc_result;
-	
-	if (NRF_ADC->EVENTS_END != 0)
-	{
-		// Fetch ADC result & Stop interruption
-		NRF_ADC->EVENTS_END     = 0;	// REMEMBER TO CLEAR IRQ!
-		adc_result              = NRF_ADC->RESULT;
-		NRF_ADC->TASKS_STOP     = 1;
-		
-		// Schedule ADC event
-		err_code = app_sched_event_put(&adc_result, sizeof(uint8_t), ADC_IRQ_handler);
-		APP_ERROR_CHECK(err_code);
-	}
+    uint8_t adc_result;
+
+    if (NRF_ADC->EVENTS_END != 0)
+    {
+        // Fetch ADC result & Stop interruption
+        NRF_ADC->EVENTS_END     = 0;    // REMEMBER TO CLEAR IRQ!
+        adc_result              = NRF_ADC->RESULT;
+        NRF_ADC->TASKS_STOP     = 1;
+
+        // Schedule ADC event
+        err_code = app_sched_event_put(&adc_result, sizeof(uint8_t), ADC_IRQ_handler);
+        APP_ERROR_CHECK(err_code);
+    }
 }
 
 #endif
