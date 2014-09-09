@@ -42,7 +42,7 @@ void system_off_mode(void)
     uint32_t err_code;
     uint32_t count;
 
-    back_data_exit_preserve();
+    back_data_preserve();
 
     // Wait if there is any flash access pending
     do

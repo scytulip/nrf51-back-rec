@@ -69,10 +69,14 @@ void blinky_led_button_press_timeout_handler(void *p_context)
 
     UNUSED_PARAMETER(p_context);
 
+    /* Turn on advertising LED for 100ms every 3s. */
     if (get_sys_state() == SYS_DATA_RECORDING)
         nrf_gpio_pin_write(ADVERTISING_LED_PIN_NO, !led_count);
+    
+    /* Turn on connected LED for 100ms every 3s, if data storage is full. */
+    if (get_sys_state() == SYS_DATA_RECORDING && is_data_full())
+        nrf_gpio_pin_write(CONNECTED_LED_PIN_NO, led_count==15);
 
-    /* Turn on advertising LED for 100ms every 3s. */
     led_count = (led_count + 1) % 30;
 
     /* Count button pushed time. */

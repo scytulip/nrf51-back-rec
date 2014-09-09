@@ -115,6 +115,12 @@ void data_report_timeout_handler(void *p_context)
         {
             ds1621_temp_read(&temp, &temp_frac);
             ble_dts_update_handler((uint16_t) temp);
+            
+            data[m_cur_page][m_cur_data_idx] = (uint8_t) temp;      //< Save data
+            m_cur_data_idx ++;
+            
+            if (m_cur_data_idx == BD_DATA_NUM_PER_BLOCK) back_data_preserve(); //< Preserve data if one page is full;
+            
             break;
         }
         default:
@@ -177,12 +183,13 @@ void back_data_init(void)
     // Clear data cache
     m_cur_page = 0;
     m_cur_data_idx = 0;
-    memset(data, 0, 2 * BD_BLOCK_SIZE * sizeof(__DATA_TYPE));
+    memset(data, 0, 2 * BD_BLOCK_SIZE);
     
-    // Find the first non-used block saved previously
+    /* Find the first non-used block saved previously,
+     and start saving data from the next non-used block. */
     m_cur_block_idx = 0;
     
-    while (m_cur_block_idx < BD_BLOCK_COUNT)
+    while (!is_data_full())
     {
         err_code = pstorage_block_identifier_get(&m_base_handle, m_cur_block_idx, &block_handle);
         APP_ERROR_CHECK(err_code);
@@ -197,10 +204,41 @@ void back_data_init(void)
 
 }
 
-/**@brief Preserve data in FLASH before shut down
+/**@brief Preserve data in FLASH when a page is full
  */
-void back_data_exit_preserve(void)
+void back_data_preserve(void)
 {
+    pstorage_handle_t           block_handle;                       /**< Current block handle. */
+    uint32_t                    err_code;
+    
+    if (m_cur_data_idx != 0) // Not run if page is empty
+    {
+        if (!is_data_full())
+        {
+            err_code = pstorage_block_identifier_get(&m_base_handle, m_cur_block_idx, &block_handle);
+            APP_ERROR_CHECK(err_code);
+            
+            // Set config info
+            data[m_cur_page][BD_CONFIG1_OFFSET] = BD_CONFIG1_USE_Msk;       //< Mark block as used 
+            
+            err_code = pstorage_update(&block_handle, data[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
+            APP_ERROR_CHECK(err_code);
 
+            m_cur_block_idx ++;
+        }
+        
+        m_cur_page ^= 0x1; //< Change Page
+        m_cur_data_idx = 0;
+        memset(data[m_cur_page], 0, BD_BLOCK_SIZE);
+    }
+    
+}
+
+/**@brief Return a bool value indicating whether data storage is full
+ **@rtval TRUE data storage is full
+ */
+bool is_data_full(void)
+{
+    return m_cur_block_idx == BD_BLOCK_COUNT;
 }
 

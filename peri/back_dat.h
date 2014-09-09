@@ -28,7 +28,7 @@
 */
 
 #define __DATA_TYPE uint8_t                                                             /**< Background recording data type. */
-#define BD_BLOCK_SIZE           8                                                       /**< Size of each pstorage FLASH block (in uint8_t). */
+#define BD_BLOCK_SIZE           16                                                       /**< Size of each pstorage FLASH block (in uint8_t). */
 #define BD_BLOCK_COUNT          4                                                       /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
 #define BD_DATA_NUM_PER_BLOCK   4                                                       /**< Number of data points per block. */
 #define BD_DATA_END_ADDR        BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE)             /**< End address of data segment in each block. */
@@ -71,9 +71,14 @@ void back_data_init(void);
  */
 void back_data_clear_storage(void);
 
-/**@brief Preserve data in FLASH before shut down
+/**@brief Preserve data in FLASH when a page is full
  */
-void back_data_exit_preserve(void);
+void back_data_preserve(void);
+
+/**@brief Return a bool value indicating whether data storage is full
+ **@rtval TRUE data storage is full
+ */
+bool is_data_full(void);
 
 #endif
 
