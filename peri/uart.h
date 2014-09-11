@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-//#define UART_DEBUG_ENABLE 1
+#define UART_DEBUG_ENABLE 1
 
 #define RX_PIN_NO       11
 #define TX_PIN_NO       9

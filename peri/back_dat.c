@@ -22,14 +22,14 @@
 
 
 
-static uint32_t sys_state;                                                      /**< System function state. */
-static uint32_t fsm_state = 0;                                                  /**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
+static uint32_t             sys_state;                                                      /**< System function state. */
+static uint32_t             fsm_state = 0;                                                  /**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
-static __DATA_TYPE data[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));          /**< Ram pages for data to be saved in FLASH. */
-static uint32_t m_cur_page;                                                     /**< Current page # for data. */
-static uint32_t m_cur_data_idx;                                                 /**< Current index # for data. */
-static uint32_t m_cur_block_idx;                                                /**< Current block # of FLASH area for saving current data */
-static pstorage_handle_t m_base_handle;                                         /**< Identifier for allocated blocks' base address. */
+static __DATA_TYPE          data[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));              /**< Ram pages for data to be saved in FLASH. */
+static uint32_t             m_cur_page;                                                      /**< Current page # for data. */
+static uint32_t             m_cur_data_idx;                                                  /**< Current index # for data. */
+static uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data */
+static pstorage_handle_t    m_base_handle;                                                   /**< Identifier for allocated blocks' base address. */
 
 /*****************************************************************************
 * Utility Functions
@@ -121,6 +121,7 @@ void data_report_timeout_handler(void *p_context)
             
             if (m_cur_data_idx == BD_DATA_NUM_PER_BLOCK) back_data_preserve(); //< Preserve data if one page is full;
             
+            
             break;
         }
         default:
@@ -183,7 +184,7 @@ void back_data_init(void)
     // Clear data cache
     m_cur_page = 0;
     m_cur_data_idx = 0;
-    memset(data, 0, 2 * BD_BLOCK_SIZE);
+    memset(data, __DATA_FILL, 2 * BD_BLOCK_SIZE);
     
     /* Find the first non-used block saved previously,
      and start saving data from the next non-used block. */
@@ -197,7 +198,10 @@ void back_data_init(void)
         err_code = pstorage_load(config, &block_handle, BD_CONFIG_NUM_PER_BLOCK, BD_CONFIG_BASE_ADDR);
         APP_ERROR_CHECK(err_code);   
         
-        if (!(config[BD_CONFIG1_OFFSET] & BD_CONFIG1_USE_Msk)) break;       // Block is marked as non-used 
+        DEBUG_PF("Load Block %d, Config %x\r\n", m_cur_block_idx, config[BD_CONFIG1_OFFSET]);
+        
+        /** @note As clear operation set all FLASH bits to FF, reversed logic is used for config info bytes: 0 - set, 1 - unset. */ 
+        if (!(~config[BD_CONFIG1_OFFSET] & BD_CONFIG1_USE_Msk)) break;       // Block is marked as non-used 
         
         m_cur_block_idx ++ ;
     }
@@ -219,17 +223,19 @@ void back_data_preserve(void)
             APP_ERROR_CHECK(err_code);
             
             // Set config info
-            data[m_cur_page][BD_CONFIG1_OFFSET] = BD_CONFIG1_USE_Msk;       //< Mark block as used 
+            data[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG1_OFFSET] = ~BD_CONFIG1_USE_Msk;       //< Mark block as used. (Reversed logic)
             
-            err_code = pstorage_update(&block_handle, data[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
+            err_code = pstorage_update(&block_handle, (uint8_t *)data[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
             APP_ERROR_CHECK(err_code);
+            
+            DEBUG_PF("PAGE:%d, BLOCK:%d PRESERVED\r\n", m_cur_page, m_cur_block_idx);
 
             m_cur_block_idx ++;
         }
         
         m_cur_page ^= 0x1; //< Change Page
         m_cur_data_idx = 0;
-        memset(data[m_cur_page], 0, BD_BLOCK_SIZE);
+        memset(data[m_cur_page], __DATA_FILL, BD_BLOCK_SIZE);
     }
     
 }

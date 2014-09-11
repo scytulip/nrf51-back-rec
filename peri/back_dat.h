@@ -27,8 +27,10 @@
 
 */
 
-#define __DATA_TYPE uint8_t                                                             /**< Background recording data type. */
-#define BD_BLOCK_SIZE           16                                                       /**< Size of each pstorage FLASH block (in uint8_t). */
+#define __DATA_TYPE             uint8_t                                                 /**< Background recording data type. */
+#define __DATA_FILL             0xFF                                                    /**< Filling data for unused space. */
+
+#define BD_BLOCK_SIZE           16                                                      /**< Size of each pstorage FLASH block (in uint8_t). */
 #define BD_BLOCK_COUNT          4                                                       /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
 #define BD_DATA_NUM_PER_BLOCK   4                                                       /**< Number of data points per block. */
 #define BD_DATA_END_ADDR        BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE)             /**< End address of data segment in each block. */
@@ -37,6 +39,8 @@
                                 (BD_DATA_END_ADDR)                                      /**< Base address for CONFIG blocks (in uint8_t, aligned to Word). */
 #define BD_CONFIG_NUM_PER_BLOCK 4                                                       /**< Number of config info per block (a multiple of 4 bytes). */
 #define BD_CONFIG1_OFFSET       0x0                                                     /**< Offset address for CONFIG1 block. */
+
+/** @note As clear operation set all FLASH bits to FF, reversed logic is used for config info bytes: 0 - set, 1 - unset. */
 #define BD_CONFIG1_USE_Msk      0x1                                                     /**< Mask for "this block is used." */
 
 /* System function state */
