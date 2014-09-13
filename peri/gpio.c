@@ -13,7 +13,8 @@
 
 static uint32_t led_count;      /**< Timer event counter for blinky pattern. */
 static uint32_t button_count;   /**< Timer event counter for button function. */
-static bool wakeup_pushed;      /**< Is wakeup button (function button) pushed? */
+static bool wakeup_pushed;      /**< Is wakeup button (function button/power down) pushed? */
+static bool sendat_pushed;      /**< Is sendat button (send data/clear FLASH) pushed? */
 
 /*****************************************************************************
 * Event Handlers
@@ -24,42 +25,73 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
     switch (pin_no)
     {
         case WAKEUP_BUTTON_PIN:
-            if (button_action == APP_BUTTON_PUSH)
+            if (button_action == APP_BUTTON_PUSH && !sendat_pushed)
             {
                 button_count = 0;
                 wakeup_pushed = true;
             }
-            else if (button_action == APP_BUTTON_RELEASE &&
-                     get_sys_state() == SYS_DATA_RECORDING)
+            else if (button_action == APP_BUTTON_RELEASE && !sendat_pushed )
             {
                 if (button_count > 20)
-                {
+                {   // In any mode, long press wakeup button to shutdown
+                    ble_connection_disconnect();
                     glb_timers_stop();
-                    system_off_mode();          // Long press to shut down.
+                    system_off_mode();
                 }
-                else
+                else switch(get_sys_state())
                 {
-                    set_sys_state(SYS_BLE_DATA_INSTANT);
-                    advertising_start();        // Short press to enter instant data report mode.
-                }
-                button_count = 0;
-                wakeup_pushed = false;
-            }
-            else if (button_action == APP_BUTTON_RELEASE &&
-                     get_sys_state() == SYS_BLE_DATA_INSTANT)
-            {
-                ble_connection_disconnect();                        // Short press to disconnect BLE link.
-                if (button_count > 20)
-                {
-                    glb_timers_stop();
-                    system_off_mode();          // Long press to shutdown.
+                    case SYS_DATA_RECORDING:
+                        set_sys_state(SYS_BLE_DATA_INSTANT);
+                        advertising_start();                //< Short press to enter instant data report mode.
+                        break;
+                    case SYS_BLE_DATA_INSTANT:
+                        ble_connection_disconnect();        //< Short press to disconnect BLE link.
+                        break;
+                    case SYS_BLE_DATA_TRANSFER:
+                        set_sys_state(SYS_DATA_RECORDING);  //< Short press to go back to data recording mode.
+                        break;
                 }
                 button_count = 0;
                 wakeup_pushed = false;
             }
             break;
+            
         case SENDAT_BUTTON_PIN:
+            if (button_action == APP_BUTTON_PUSH && !wakeup_pushed)
+            {
+                button_count = 0;
+                sendat_pushed = true;
+            }
+            else if (button_action == APP_BUTTON_RELEASE && !wakeup_pushed )
+            {
+                if (button_count > 20)
+                {   // In any mode, long press sendat button to clear FLASH & shutdown
+                    ble_connection_disconnect();
+                    glb_timers_stop();
+                    back_data_clear_storage();
+                    system_off_mode();
+                }
+                else switch(get_sys_state())
+                {
+                    case SYS_DATA_RECORDING:
+                        set_sys_state(SYS_BLE_DATA_TRANSFER);
+                    
+                        nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+                        nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);       //< Temp code
+                    
+                        back_data_transfer();               //< Short press to enter instant data transfer mode.
+                    
+                        break;
+                    case SYS_BLE_DATA_TRANSFER:
+                        ble_connection_disconnect();        //< Short press to disconnect BLE link.
+                        break;
+                }
+                button_count = 0;
+                sendat_pushed = false;
+            }
+            
             break;
+            
     }
 }
 
@@ -80,7 +112,7 @@ void blinky_led_button_press_timeout_handler(void *p_context)
     led_count = (led_count + 1) % 30;
 
     /* Count button pushed time. */
-    if (wakeup_pushed)
+    if (wakeup_pushed || sendat_pushed)
     {
         button_count ++;
         if (button_count > 20)
@@ -132,5 +164,6 @@ void buttons_init(void)
     app_button_enable();
 
     wakeup_pushed = false;
+    sendat_pushed = false;
 }
 

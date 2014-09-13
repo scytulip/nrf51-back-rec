@@ -40,18 +40,9 @@ static dm_application_instance_t        m_app_handle;                           
 void system_off_mode(void)
 {
     uint32_t err_code;
-    uint32_t count;
 
     back_data_preserve();
-
-    // Wait if there is any flash access pending
-    do
-    {
-        app_sched_execute();
-        err_code = pstorage_access_status_get(&count);
-        APP_ERROR_CHECK(err_code);
-    }
-    while (count);
+    wait_flash_op();
 
     nrf_delay_ms(200);
 

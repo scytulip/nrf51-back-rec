@@ -25,10 +25,10 @@
 static uint32_t             sys_state;                                                      /**< System function state. */
 static uint32_t             fsm_state = 0;                                                  /**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
-static __DATA_TYPE          data[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));              /**< Ram pages for data to be saved in FLASH. */
-static uint32_t             m_cur_page;                                                      /**< Current page # for data. */
-static uint32_t             m_cur_data_idx;                                                  /**< Current index # for data. */
-static uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data */
+static uint8_t              ram_page[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));          /**< Ram pages for data & config to be saved in FLASH. */
+static uint32_t             m_cur_page;                                                      /**< Current page # for data & config. */
+static uint32_t             m_cur_data_idx;                                                  /**< Current index # for data & config. */
+static uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data & config */
 static pstorage_handle_t    m_base_handle;                                                   /**< Identifier for allocated blocks' base address. */
 
 /*****************************************************************************
@@ -45,7 +45,7 @@ void set_sys_state( uint32_t state )
     {
         case SYS_DATA_RECORDING:
         {
-            glb_timers_start();                         // Start data recording timer
+            glb_timers_start();                         //< Start data recording timer
             DEBUG_ASSERT("SYS_DATA_RECORDING.\r\n");
             break;
         }
@@ -56,7 +56,9 @@ void set_sys_state( uint32_t state )
         }
         case SYS_BLE_DATA_TRANSFER:
         {
-            glb_timers_stop();                          // Stop data recording timer
+            glb_timers_stop();                          //< Stop data recording timer
+            back_data_preserve();
+            wait_flash_op();
             DEBUG_ASSERT("SYS_BLE_DATA_TRANSFER.\r\n");
             break;
         }
@@ -79,7 +81,104 @@ void back_data_clear_storage(void)
     uint32_t err_code;
     err_code = pstorage_clear(&m_base_handle, BD_BLOCK_COUNT * BD_BLOCK_SIZE);
     APP_ERROR_CHECK(err_code);
+    
+    // Avoid any further preserve operation
+    m_cur_page = 0;
+    m_cur_data_idx = 0;
+    memset(ram_page, __DATA_FILL, 2 * BD_BLOCK_SIZE);
 }
+
+/**@brief Preserve data in FLASH when a page is full
+ */
+void back_data_preserve(void)
+{
+    pstorage_handle_t           block_handle;                       /**< Current block handle. */
+    uint32_t                    err_code;
+    
+    if (m_cur_data_idx != 0) // Not run if page is empty
+    {
+        if (!is_data_full())
+        {
+            err_code = pstorage_block_identifier_get(&m_base_handle, m_cur_block_idx, &block_handle);
+            APP_ERROR_CHECK(err_code);
+            
+            // Set config info
+            ram_page[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG1_OFFSET] = ~BD_CONFIG1_USE_Msk;       //< Mark block as used. (Reversed logic)
+            
+            err_code = pstorage_update(&block_handle, ram_page[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
+            APP_ERROR_CHECK(err_code);
+            
+            DEBUG_PF("PAGE:%d, BLOCK:%d PRESERVED\r\n", m_cur_page, m_cur_block_idx);
+
+            m_cur_block_idx ++;
+        }
+        
+        m_cur_page ^= 0x1; //< Change Page
+        m_cur_data_idx = 0;
+        memset(ram_page[m_cur_page], __DATA_FILL, BD_BLOCK_SIZE);
+    }
+    
+}
+
+/**@brief Transfer preserved data through UART */
+void back_data_transfer(void)
+{
+    uint32_t                    i,j;
+    uint32_t                    err_code;
+    uint8_t                     config[BD_CONFIG_NUM_PER_BLOCK];    /**< Config info. */
+    pstorage_handle_t           block_handle;                       /**< Current block handle. */
+    __DATA_TYPE *               data;
+    
+    data = (__DATA_TYPE *)ram_page[m_cur_page^0x1];
+    
+    /** FOR TEST ONLY, BLOCKING CPU !!!! **/
+    for (i=0; i<BD_BLOCK_COUNT; i++)
+    {
+        err_code = pstorage_block_identifier_get(&m_base_handle, i, &block_handle);
+        APP_ERROR_CHECK(err_code);
+        
+        err_code = pstorage_load(config, &block_handle, BD_CONFIG_NUM_PER_BLOCK, BD_CONFIG_BASE_ADDR);
+        APP_ERROR_CHECK(err_code);
+        
+        if (!(~config[BD_CONFIG1_OFFSET] & BD_CONFIG1_USE_Msk)) break;       // Block is marked as non-used
+        
+        err_code = pstorage_load((uint8_t *)data, &block_handle, BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE), 0);
+        APP_ERROR_CHECK(err_code);
+        
+        DEBUG_PF("GROUP %d", i);
+        for (j=0; j<BD_DATA_NUM_PER_BLOCK; j++)
+        {
+            DEBUG_PF(", %d", data[j]);
+        }
+        DEBUG_ASSERT("\r\n")
+    }
+}
+
+/**@brief Return a bool value indicating whether data storage is full
+ **@rtval TRUE data storage is full
+ */
+bool is_data_full(void)
+{
+    return m_cur_block_idx == BD_BLOCK_COUNT;
+}
+
+/**@brief Wait if there is any flash access pending
+*/
+void wait_flash_op(void)
+{
+    uint32_t    err_code;
+    uint32_t    count;
+    
+    do
+    {
+        app_sched_execute();
+        err_code = pstorage_access_status_get(&count);
+        APP_ERROR_CHECK(err_code);
+    }
+    while (count);
+}
+
+
 
 /*****************************************************************************
 * Event Handlers
@@ -91,6 +190,8 @@ void back_data_clear_storage(void)
  */
 void data_report_timeout_handler(void *p_context)
 {
+    
+    __DATA_TYPE *  data = (__DATA_TYPE *)ram_page[m_cur_page];       /**< Pointer for data segment. */
 
     UNUSED_PARAMETER(p_context);
 
@@ -116,7 +217,7 @@ void data_report_timeout_handler(void *p_context)
             ds1621_temp_read(&temp, &temp_frac);
             ble_dts_update_handler((uint16_t) temp);
             
-            data[m_cur_page][m_cur_data_idx] = (uint8_t) temp;      //< Save data
+            data[m_cur_data_idx] = (__DATA_TYPE) temp;      //< Save data
             m_cur_data_idx ++;
             
             if (m_cur_data_idx == BD_DATA_NUM_PER_BLOCK) back_data_preserve(); //< Preserve data if one page is full;
@@ -184,7 +285,7 @@ void back_data_init(void)
     // Clear data cache
     m_cur_page = 0;
     m_cur_data_idx = 0;
-    memset(data, __DATA_FILL, 2 * BD_BLOCK_SIZE);
+    memset(ram_page, __DATA_FILL, 2 * BD_BLOCK_SIZE);
     
     /* Find the first non-used block saved previously,
      and start saving data from the next non-used block. */
@@ -198,7 +299,7 @@ void back_data_init(void)
         err_code = pstorage_load(config, &block_handle, BD_CONFIG_NUM_PER_BLOCK, BD_CONFIG_BASE_ADDR);
         APP_ERROR_CHECK(err_code);   
         
-        DEBUG_PF("Load Block %d, Config %x\r\n", m_cur_block_idx, config[BD_CONFIG1_OFFSET]);
+        DEBUG_PF("Load Block %d, Config1 %x\r\n", m_cur_block_idx, config[BD_CONFIG1_OFFSET]);
         
         /** @note As clear operation set all FLASH bits to FF, reversed logic is used for config info bytes: 0 - set, 1 - unset. */ 
         if (!(~config[BD_CONFIG1_OFFSET] & BD_CONFIG1_USE_Msk)) break;       // Block is marked as non-used 
@@ -206,45 +307,5 @@ void back_data_init(void)
         m_cur_block_idx ++ ;
     }
 
-}
-
-/**@brief Preserve data in FLASH when a page is full
- */
-void back_data_preserve(void)
-{
-    pstorage_handle_t           block_handle;                       /**< Current block handle. */
-    uint32_t                    err_code;
-    
-    if (m_cur_data_idx != 0) // Not run if page is empty
-    {
-        if (!is_data_full())
-        {
-            err_code = pstorage_block_identifier_get(&m_base_handle, m_cur_block_idx, &block_handle);
-            APP_ERROR_CHECK(err_code);
-            
-            // Set config info
-            data[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG1_OFFSET] = ~BD_CONFIG1_USE_Msk;       //< Mark block as used. (Reversed logic)
-            
-            err_code = pstorage_update(&block_handle, (uint8_t *)data[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
-            APP_ERROR_CHECK(err_code);
-            
-            DEBUG_PF("PAGE:%d, BLOCK:%d PRESERVED\r\n", m_cur_page, m_cur_block_idx);
-
-            m_cur_block_idx ++;
-        }
-        
-        m_cur_page ^= 0x1; //< Change Page
-        m_cur_data_idx = 0;
-        memset(data[m_cur_page], __DATA_FILL, BD_BLOCK_SIZE);
-    }
-    
-}
-
-/**@brief Return a bool value indicating whether data storage is full
- **@rtval TRUE data storage is full
- */
-bool is_data_full(void)
-{
-    return m_cur_block_idx == BD_BLOCK_COUNT;
 }
 

@@ -139,7 +139,8 @@ int main(void)
     device_manager_init();
     back_data_init();
 
-    if (!(rst_reas & POWER_RESETREAS_SREQ_Msk))   // For Debug interface
+
+    if (!(rst_reas & POWER_RESETREAS_SREQ_Msk))         // Disable first power cycle for debug purpose.
     {
         if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
         {
@@ -149,14 +150,14 @@ int main(void)
             );
 
             /* Clear all FLASH data. */
-            back_data_clear_storage();
+            //back_data_clear_storage();
 
             /* Shut down */
             system_off_mode();
 
         }
     }
-
+    
     /* Peripherals Initialization */
     ble_stack_init();           // Enable BLE stack
 

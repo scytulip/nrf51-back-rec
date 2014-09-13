@@ -41,6 +41,10 @@ void timers_init(void)
                                 APP_TIMER_MODE_REPEATED,
                                 blinky_led_button_press_timeout_handler);
     APP_ERROR_CHECK(err_code);
+    
+    // Start LED blinky timer
+    err_code = app_timer_start(m_blinky_led_timer_id, BLINKY_LED_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /*****************************************************************************
@@ -77,10 +81,6 @@ void glb_timers_start(void)
 
     err_code = app_timer_start(m_data_report_timer_id, DATA_REPORT_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_start(m_blinky_led_timer_id, BLINKY_LED_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
 }
 
 /**@brief Function for stoping global timers (timers for flashing LED, data recording, etc.).
@@ -92,8 +92,6 @@ void glb_timers_stop(void)
     err_code = app_timer_stop(m_data_report_timer_id);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_stop(m_blinky_led_timer_id);
-    APP_ERROR_CHECK(err_code);
 }
 
 

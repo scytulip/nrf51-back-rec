@@ -30,9 +30,9 @@
 #define __DATA_TYPE             uint8_t                                                 /**< Background recording data type. */
 #define __DATA_FILL             0xFF                                                    /**< Filling data for unused space. */
 
-#define BD_BLOCK_SIZE           16                                                      /**< Size of each pstorage FLASH block (in uint8_t). */
-#define BD_BLOCK_COUNT          4                                                       /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
-#define BD_DATA_NUM_PER_BLOCK   4                                                       /**< Number of data points per block. */
+#define BD_BLOCK_SIZE           128                                                     /**< Size of each pstorage FLASH block (in uint8_t). */
+#define BD_BLOCK_COUNT          256                                                     /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
+#define BD_DATA_NUM_PER_BLOCK   120                                                     /**< Number of data points per block. */
 #define BD_DATA_END_ADDR        BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE)             /**< End address of data segment in each block. */
 #define BD_CONFIG_BASE_ADDR     (BD_DATA_END_ADDR & 0x3) ? \
                                 (((BD_DATA_END_ADDR >> 0x2) + 1) << 0x2) : \
@@ -46,9 +46,9 @@
 /* System function state */
 enum
 {
-    SYS_DATA_RECORDING,
-    SYS_BLE_DATA_INSTANT,
-    SYS_BLE_DATA_TRANSFER
+    SYS_DATA_RECORDING,         //< Data recording mode
+    SYS_BLE_DATA_INSTANT,       //< Data instant report mode
+    SYS_BLE_DATA_TRANSFER       //< Data transfer mode
 };
 
 /**@brief Function for send instant data.
@@ -79,10 +79,17 @@ void back_data_clear_storage(void);
  */
 void back_data_preserve(void);
 
+/**@brief Transfer preserved data through UART */
+void back_data_transfer(void);
+
 /**@brief Return a bool value indicating whether data storage is full
  **@rtval TRUE data storage is full
  */
 bool is_data_full(void);
+
+/**@brief Wait if there is any flash access pending
+*/
+void wait_flash_op(void);
 
 #endif
 
