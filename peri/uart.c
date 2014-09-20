@@ -124,7 +124,7 @@ void uart_init(void)
 
     // Enable interruption
     NRF_UART0->INTENSET = UART_INTENSET_TXDRDY_Msk; /**< Turn on TX Ready interruption */
-    NRF_UART0->BAUDRATE = (UART_BAUDRATE_BAUDRATE_Baud38400 << UART_BAUDRATE_BAUDRATE_Pos);
+    NRF_UART0->BAUDRATE = (UART_BAUDRATE_BAUDRATE_Baud250000 << UART_BAUDRATE_BAUDRATE_Pos);
     NRF_UART0->ENABLE = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
 
     err_code = sd_nvic_ClearPendingIRQ(UART0_IRQn);

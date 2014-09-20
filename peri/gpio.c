@@ -22,6 +22,8 @@ static bool sendat_pushed;      /**< Is sendat button (send data/clear FLASH) pu
 /**@brief Button handler for short button press */
 static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
 {
+    uint32_t err_code;
+    
     switch (pin_no)
     {
         case WAKEUP_BUTTON_PIN:
@@ -79,7 +81,8 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
                         nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
                         nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);       //< Temp code
                     
-                        back_data_transfer();               //< Short press to enter instant data transfer mode.
+                        err_code = app_sched_event_put(NULL, 0, back_data_transfer);
+                        APP_ERROR_CHECK(err_code);               //< Short press to enter instant data transfer mode.
                     
                         break;
                     case SYS_BLE_DATA_TRANSFER:

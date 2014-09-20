@@ -80,7 +80,7 @@ void back_data_clear_storage(void);
 void back_data_preserve(void);
 
 /**@brief Transfer preserved data through UART */
-void back_data_transfer(void);
+void back_data_transfer(void *p_event_data, uint16_t event_size);
 
 /**@brief Return a bool value indicating whether data storage is full
  **@rtval TRUE data storage is full

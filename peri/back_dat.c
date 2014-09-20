@@ -121,7 +121,7 @@ void back_data_preserve(void)
 }
 
 /**@brief Transfer preserved data through UART */
-void back_data_transfer(void)
+void back_data_transfer(void *p_event_data, uint16_t event_size)
 {
     uint32_t                    i,j;
     uint32_t                    err_code;
@@ -145,12 +145,14 @@ void back_data_transfer(void)
         err_code = pstorage_load((uint8_t *)data, &block_handle, BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE), 0);
         APP_ERROR_CHECK(err_code);
         
-        DEBUG_PF("GROUP %d", i);
+        printf("GROUP %d", i);
         for (j=0; j<BD_DATA_NUM_PER_BLOCK; j++)
         {
-            DEBUG_PF(", %d", data[j]);
+            printf(", %d", data[j]);
         }
-        DEBUG_ASSERT("\r\n")
+        printf("\r\n");
+        
+        app_sched_execute();
     }
 }
 
@@ -216,6 +218,8 @@ void data_report_timeout_handler(void *p_context)
         {
             ds1621_temp_read(&temp, &temp_frac);
             ble_dts_update_handler((uint16_t) temp);
+            
+            if (temp_frac != 0) temp = (temp << 1) + 1; else temp = temp << 1;
             
             data[m_cur_data_idx] = (__DATA_TYPE) temp;      //< Save data
             m_cur_data_idx ++;

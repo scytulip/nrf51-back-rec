@@ -61,8 +61,8 @@ void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t *p_
     nrf_gpio_pin_set(LED_0);
     nrf_gpio_pin_set(LED_1);
 
-    //DEBUG_PF("Error Code: %d\r\nError Line #: %d\r\nError File: %s\r\n",
-    //      error_code, line_num, p_file_name);
+    DEBUG_PF("Error Code: %d\r\nError Line #: %d\r\nError File: %s\r\n",
+          error_code, line_num, p_file_name);
 
     ble_debug_assert_handler(error_code, line_num, p_file_name);
 

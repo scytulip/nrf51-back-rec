@@ -120,7 +120,9 @@ void ds1621_temp_read(int8_t *temp, int8_t *temp_frac)
                 *temp       = (int8_t)data_buffer[0];
                 *temp_frac  = (int8_t)data_buffer[1];
 
-                DEBUG_PF("Temp = %d\r\n", *temp);
+                DEBUG_PF("Temp = %d", *temp);
+                if (*temp_frac != 0) DEBUG_ASSERT(".5");
+                DEBUG_ASSERT("\r\n");
 
             }
             else DEBUG_ASSERT("DS1621 data reading is failed. (ds1621_temp_read)\r\n");
