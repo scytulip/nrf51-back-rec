@@ -21,12 +21,19 @@
 
 // Advertising Parameters
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      15                                         /**< The advertising timeout (in units of seconds). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      15                                          /**< The advertising timeout (in units of seconds). */
+
+/* @note If both conn_sup_timeout and max_conn_interval are specified, then the following constraint applies:
+ *       conn_sup_timeout * 4 > (1 + slave_latency) * max_conn_interval
+ *       that corresponds to the following BT Spec 4.1 Vol 2 Part E, Section 7.8.12 requirement:
+ *       The Supervision_Timeout in milliseconds shall be larger than
+ *       (1 + Conn_Latency) * Conn_Interval_Max * 2, where Conn_Interval_Max is given in milliseconds.
+ */
 
 // Connection Parameters
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(500, UNIT_1_25_MS)            /**< Minimum acceptable connection interval (0.5 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(1000, UNIT_1_25_MS)           /**< Maximum acceptable connection interval (1 second). */
-#define SLAVE_LATENCY                   0                                           /**< Slave latency. */
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(20, UNIT_1_25_MS)             /**< Minimum acceptable connection interval (20ms, setting for iOS). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(40, UNIT_1_25_MS)             /**< Maximum acceptable connection interval (40ms). */
+#define SLAVE_LATENCY                   50                                          /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)             /**< Connection supervisory timeout (4 seconds). */
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(5000, APP_TIMER_PRESCALER)  /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (5 seconds). */
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(30000, APP_TIMER_PRESCALER) /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
@@ -101,6 +108,9 @@ void ble_connection_disconnect(void);
 
 /**@brief Initialize system event handler. */
 void sys_evt_init(void);
+
+/**@brief Send data through BLE UART service with maximum throughput. */
+void ble_nus_data_transfer(void);
 
 #endif
 

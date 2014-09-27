@@ -12,7 +12,10 @@
 #include "softdevice_handler.h"
 #include "app_scheduler.h"
 
+#include "ble_nus.h"
+
 #include "back_dat.h"
+#include "gpio.h"
 #include "bluetooth.h"
 #include "uart.h"
 #include "timers.h"
@@ -29,6 +32,8 @@ static uint8_t              ram_page[2][BD_BLOCK_SIZE] __attribute__((aligned(4)
 static uint32_t             m_cur_page;                                                      /**< Current page # for data & config. */
 static uint32_t             m_cur_data_idx;                                                  /**< Current index # for data & config. */
 static uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data & config */
+static uint32_t             m_ble_data_idx;                                                  /**< Index # (head pointer) for data & config to be transferred. */
+static uint32_t             m_ble_block_idx;                                                 /**< Block # of FLASH area to be transferred */
 static pstorage_handle_t    m_base_handle;                                                   /**< Identifier for allocated blocks' base address. */
 
 /*****************************************************************************
@@ -40,17 +45,20 @@ static pstorage_handle_t    m_base_handle;                                      
 void set_sys_state( uint32_t state )
 {
     sys_state = state;
-
+    
     switch (state)
     {
         case SYS_DATA_RECORDING:
         {
+            nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
+            nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
             glb_timers_start();                         //< Start data recording timer
             DEBUG_ASSERT("SYS_DATA_RECORDING.\r\n");
             break;
         }
         case SYS_BLE_DATA_INSTANT:
         {
+            glb_timers_start();                         //< Start data recording timer
             DEBUG_ASSERT("SYS_BLE_DATA_INSTANT.\r\n");
             break;
         }
@@ -103,7 +111,8 @@ void back_data_preserve(void)
             APP_ERROR_CHECK(err_code);
             
             // Set config info
-            ram_page[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG1_OFFSET] = ~BD_CONFIG1_USE_Msk;       //< Mark block as used. (Reversed logic)
+            ram_page[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG1_OFFSET] = ~BD_CONFIG1_USE_Msk;            //< Mark block as used. (Reversed logic)
+            ram_page[m_cur_page][BD_CONFIG_BASE_ADDR + BD_CONFIG2_OFFSET] = (uint8_t) m_cur_data_idx;       //< Number of data points in current block.
             
             err_code = pstorage_update(&block_handle, ram_page[m_cur_page], BD_BLOCK_SIZE ,0);  //< Save a full page to a block
             APP_ERROR_CHECK(err_code);
@@ -120,14 +129,62 @@ void back_data_preserve(void)
     
 }
 
+/**@brief Prepare data to be sent through BLE UART service.
+ *
+ * @details This function fill the p_data array, which is transferred through BLE UART, with all
+ *          data preserved in the FLASH. As in each transmission, only BLE_NUS_MAX_DATA_LEN bytes could
+ *          be sent. All FLASH data will be reassigned into multiple BLE_NUS_MAX_DATA_LEN-byte segments.
+ *
+ * @param[out] p_data   Pointer to a array of BLE_NUS_MAX_DATA_LEN bytes.
+ * @param[out] length   Length of data in p_data. If length is equal to 0, all data has been processed.
+ * 
+ * @rtval TRUE  All data has been processed.
+ *
+ */
+void back_data_ble_nus_fill(uint8_t *p_data, uint8_t *length)
+{
+    uint32_t            err_code;
+    uint8_t             *data;              //< Pointer to a page
+    pstorage_handle_t   block_handle;       //< Current block handle.
+    
+    data = ram_page[m_cur_page^0x1];        //< Access to the idle page
+    *length = 0;
+    
+    while(*length < BLE_NUS_MAX_DATA_LEN)
+    {
+        if (m_ble_data_idx != BD_BLOCK_SIZE)                // Fill p_data with remained data in current block
+        {
+            p_data[*length] = data[m_ble_data_idx];
+            (*length) ++;
+            m_ble_data_idx ++;
+            
+        } else if (m_ble_block_idx + 1 != BD_BLOCK_COUNT)   // Fetch next block if current block is all sent
+        {
+            m_ble_data_idx = 0;
+            m_ble_block_idx ++;
+            
+            err_code = pstorage_block_identifier_get(&m_base_handle, m_ble_block_idx, &block_handle);
+            APP_ERROR_CHECK(err_code);
+        
+            err_code = pstorage_load(data, &block_handle, BD_BLOCK_SIZE, 0);
+            APP_ERROR_CHECK(err_code);
+            
+        } else break;
+    }
+}
+
 /**@brief Transfer preserved data through UART */
 void back_data_transfer(void *p_event_data, uint16_t event_size)
 {
     uint32_t                    i,j;
     uint32_t                    err_code;
     uint8_t                     config[BD_CONFIG_NUM_PER_BLOCK];    /**< Config info. */
+    uint8_t                     count;
     pstorage_handle_t           block_handle;                       /**< Current block handle. */
     __DATA_TYPE *               data;
+    
+    UNUSED_PARAMETER(p_event_data);
+    UNUSED_PARAMETER(event_size);
     
     data = (__DATA_TYPE *)ram_page[m_cur_page^0x1];
     
@@ -142,11 +199,14 @@ void back_data_transfer(void *p_event_data, uint16_t event_size)
         
         if (!(~config[BD_CONFIG1_OFFSET] & BD_CONFIG1_USE_Msk)) break;       // Block is marked as non-used
         
+        count = config[BD_CONFIG2_OFFSET];
+        
         err_code = pstorage_load((uint8_t *)data, &block_handle, BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE), 0);
         APP_ERROR_CHECK(err_code);
         
+        
         printf("GROUP %d", i);
-        for (j=0; j<BD_DATA_NUM_PER_BLOCK; j++)
+        for (j=0; j<count; j++)
         {
             printf(", %d", data[j]);
         }
@@ -268,6 +328,22 @@ static void pstorage_callback(pstorage_handle_t   *p_handle,
 /*****************************************************************************
 * Initialization Functions
 *****************************************************************************/
+
+/**@brief Initialize file (group data) transfer through BLE link 
+ *
+ * @details This function send the whole FLASH storage area in binary format through
+ *          Bluetooth link. Nordic BLE UART service is used for the file transfer, and maximum 
+ *          throughput is achieved.
+ * 
+ * @note    Maximize BLE throughput
+ *          https://devzone.nordicsemi.com/question/1741/dealing-large-data-packets-through-ble/
+ */
+void back_data_transfer_ble_init(void)
+{
+    // Initialize data transfer
+    m_ble_data_idx = BD_BLOCK_SIZE;
+    m_ble_block_idx = ~(0x0);
+}
 
 /**@brief Initializing system function state.
  */

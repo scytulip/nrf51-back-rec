@@ -177,8 +177,6 @@ int main(void)
 
     /* Indicate the end of initialization */
     set_sys_state(SYS_DATA_RECORDING);
-    nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-    nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 
     /* Enter main loop */
     for (;;)
