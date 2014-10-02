@@ -30,9 +30,9 @@
 #define __DATA_TYPE             uint8_t                                                 /**< Background recording data type. */
 #define __DATA_FILL             0xFF                                                    /**< Filling data for unused space. */
 
-#define BD_BLOCK_SIZE           16                                                      /**< Size of each pstorage FLASH block (in uint8_t). */
-#define BD_BLOCK_COUNT          16                                                      /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
-#define BD_DATA_NUM_PER_BLOCK   12                                                      /**< Number of data points per block. */
+#define BD_BLOCK_SIZE           128                                                     /**< Size of each pstorage FLASH block (in uint8_t). */
+#define BD_BLOCK_COUNT          256                                                     /**< Total No. of pstorage FLASH blocks (256 x 128 = 32K blocks). */
+#define BD_DATA_NUM_PER_BLOCK   120                                                     /**< Number of data points per block. */
 #define BD_DATA_END_ADDR        BD_DATA_NUM_PER_BLOCK * sizeof(__DATA_TYPE)             /**< End address of data segment in each block. */
 #define BD_CONFIG_BASE_ADDR     (BD_DATA_END_ADDR & 0x3) ? \
                                 (((BD_DATA_END_ADDR >> 0x2) + 1) << 0x2) : \

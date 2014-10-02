@@ -33,6 +33,9 @@ static ble_hrs_t                        m_dts;                                  
 static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
 static dm_application_instance_t        m_app_handle;                               /**< Application identifier allocated by device manager. */
 static bool                             m_file_in_transit;                          /**< Indicator of file (group data) in transit. */
+static uint8_t                          m_data[BLE_NUS_MAX_DATA_LEN];               /**< Cached data to be transmitted. */
+static uint8_t                          m_data_length;                              /**< Cached data length. */
+
 
 /*****************************************************************************
 * Event Handlers & Dispatches
@@ -98,6 +101,8 @@ static void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
             
                 back_data_transfer_ble_init();          //< Initialize a file transfer
                 m_file_in_transit = true;
+            
+                back_data_ble_nus_fill(m_data, &m_data_length); //< Cache the first data segment to be sent
 
                 err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**START**", 9);     //< Start indicator
                 APP_ERROR_CHECK(err_code);
@@ -559,34 +564,35 @@ void ble_connection_disconnect(void)
 /**@brief Send data through BLE UART service with maximum throughput. */
 void ble_nus_data_transfer(void)
 {
-    uint8_t         data[BLE_NUS_MAX_DATA_LEN];     //< Data to be sent
-    uint8_t         length;
     uint32_t        err_code;
-    uint8_t         i;
-    uint8_t         txbuf_ct;                       //< BLE TX buffer count
     
-    
-    err_code = sd_ble_tx_buffer_count_get(&txbuf_ct);
-    APP_ERROR_CHECK(err_code);
-    
-    for (i=0; i<txbuf_ct; i++)
+    if (m_data_length == 0)    //< All data is sent.
     {
-        back_data_ble_nus_fill(data, &length);
+        m_file_in_transit = false;
+        err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**END**", 7);     //< End indicator
+        APP_ERROR_CHECK(err_code);
+        return;
+    }
+    
+    /** @note    Maximize BLE throughput
+      *          https://devzone.nordicsemi.com/question/1741/dealing-large-data-packets-through-ble/
+      */
+    for (;;)
+    {
+        err_code = ble_nus_send_string(&m_nus, m_data, m_data_length);
         
-        if (length == 0)    //< All data is sent.
+        if (err_code == BLE_ERROR_NO_TX_BUFFERS ||
+            err_code == NRF_ERROR_INVALID_STATE ||
+            err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING)
         {
-            if (i==0)
-            {
-                m_file_in_transit = false;
-                err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**END**", 7);     //< End indicator
-                APP_ERROR_CHECK(err_code);
-                //set_sys_state(SYS_BLE_DATA_INSTANT);
-            }
             break;
         }
+        else if (err_code != NRF_SUCCESS)
+        {
+            APP_ERROR_CHECK(err_code);
+        }
         
-        err_code = ble_nus_send_string(&m_nus, data, length);
-        APP_ERROR_CHECK(err_code);
+        back_data_ble_nus_fill(m_data, &m_data_length);
     }
     
     
