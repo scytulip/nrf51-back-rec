@@ -39,6 +39,7 @@
                                 (BD_DATA_END_ADDR)                                      /**< Base address for CONFIG blocks (in uint8_t, aligned to Word). */
 #define BD_CONFIG_NUM_PER_BLOCK 4                                                       /**< Number of config info per block (a multiple of 4 bytes). */
 #define BD_CONFIG1_OFFSET       0x0                                                     /**< Offset address for CONFIG1 block. */
+#define BD_CONFIG2_OFFSET       0x1                                                     /**< Offset address for CONFIG2 block: number of data points. */
 
 /** @note As clear operation set all FLASH bits to FF, reversed logic is used for config info bytes: 0 - set, 1 - unset. */
 #define BD_CONFIG1_USE_Msk      0x1                                                     /**< Mask for "this block is used." */
@@ -71,6 +72,17 @@ uint32_t get_sys_state(void);
  */
 void back_data_init(void);
 
+/**@brief Initialize file (group data) transfer through BLE link 
+ *
+ * @details This function send the whole FLASH storage area in binary format through
+ *          Bluetooth link. Nordic BLE UART service is used for the file transfer, and maximum 
+ *          throughput is achieved.
+ * 
+ * @note    Maximize BLE throughput
+ *          https://devzone.nordicsemi.com/question/1741/dealing-large-data-packets-through-ble/
+ */
+void back_data_transfer_ble_init(void);
+
 /**@brief Clear all saved data in FLASH
  */
 void back_data_clear_storage(void);
@@ -78,6 +90,20 @@ void back_data_clear_storage(void);
 /**@brief Preserve data in FLASH when a page is full
  */
 void back_data_preserve(void);
+
+/**@brief Prepare data to be sent through BLE UART service.
+ *
+ * @details This function fill the p_data array, which is transferred through BLE UART, with all
+ *          data preserved in the FLASH. As in each transmission, only BLE_NUS_MAX_DATA_LEN bytes could
+ *          be sent. All FLASH data will be reassigned into multiple BLE_NUS_MAX_DATA_LEN-byte segments.
+ *
+ * @param[out] p_data   Pointer to a array of BLE_NUS_MAX_DATA_LEN bytes.
+ * @param[out] length   Length of data in p_data. If length is equal to 0, all data has been processed.
+ * 
+ * @rtval TRUE  All data has been processed.
+ *
+ */
+void back_data_ble_nus_fill(uint8_t *p_data, uint8_t *length);
 
 /**@brief Transfer preserved data through UART */
 void back_data_transfer(void *p_event_data, uint16_t event_size);

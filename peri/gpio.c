@@ -47,9 +47,8 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
                         advertising_start();                //< Short press to enter instant data report mode.
                         break;
                     case SYS_BLE_DATA_INSTANT:
-                        ble_connection_disconnect();        //< Short press to disconnect BLE link.
-                        break;
                     case SYS_BLE_DATA_TRANSFER:
+                        ble_connection_disconnect();        //< Short press to disconnect BLE link.
                         set_sys_state(SYS_DATA_RECORDING);  //< Short press to go back to data recording mode.
                         break;
                 }
@@ -75,6 +74,7 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
                 }
                 else switch(get_sys_state())
                 {
+                    /* TEST TEST TEST */
                     case SYS_DATA_RECORDING:
                         set_sys_state(SYS_BLE_DATA_TRANSFER);
                     
@@ -88,6 +88,7 @@ static void button_evt_handler(uint8_t pin_no, uint8_t button_action)
                     case SYS_BLE_DATA_TRANSFER:
                         ble_connection_disconnect();        //< Short press to disconnect BLE link.
                         break;
+                    /* TEST TEST TEST */
                 }
                 button_count = 0;
                 sendat_pushed = false;

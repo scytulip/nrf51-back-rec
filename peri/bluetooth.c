@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "nordic_common.h"
 #include "nrf51.h"
 #include "nrf.h"
@@ -25,11 +27,15 @@
 
 
 // Global Variables
-static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection */
-static ble_bas_t                        m_bas;                                      /**< Structure used to identify the battery service */
-static ble_hrs_t                        m_dts;                                      /**< Structure used to report data instantly */
-static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service */
-static dm_application_instance_t        m_app_handle;                               /**< Application identifier allocated by device manager */
+static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
+static ble_bas_t                        m_bas;                                      /**< Structure used to identify the battery service. */
+static ble_hrs_t                        m_dts;                                      /**< Structure used to report data instantly. */
+static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
+static dm_application_instance_t        m_app_handle;                               /**< Application identifier allocated by device manager. */
+static bool                             m_file_in_transit;                          /**< Indicator of file (group data) in transit. */
+static uint8_t                          m_data[BLE_NUS_MAX_DATA_LEN];               /**< Cached data to be transmitted. */
+static uint8_t                          m_data_length;                              /**< Cached data length. */
+
 
 /*****************************************************************************
 * Event Handlers & Dispatches
@@ -68,10 +74,10 @@ void ble_dts_update_handler(uint16_t data)
     // Update data through BLE HRS
     ble_hrs_heart_rate_measurement_send(&m_dts, data);
 
-    char str[64];
+    char str[21];
 
     // Update data through BLE UART
-    sprintf(str, "Temp: %d", data);
+    sprintf(str, "DATA=%d", data);
     ble_nus_send_string( &m_nus, (uint8_t *)str, strlen(str) );
 
 }
@@ -80,6 +86,30 @@ void ble_dts_update_handler(uint16_t data)
  */
 static void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
 {
+    uint32_t err_code;
+    
+    if (length==1) //< Control Command
+    {
+        switch(p_data[0])
+        {
+            case 'I':
+                set_sys_state(SYS_BLE_DATA_INSTANT);
+                break;
+            case 'T':
+                set_sys_state(SYS_BLE_DATA_TRANSFER);
+                nrf_delay_ms(MAX_CONN_INTERVAL * 2);    //< Wait until all BLE operation is done.
+            
+                back_data_transfer_ble_init();          //< Initialize a file transfer
+                m_file_in_transit = true;
+            
+                back_data_ble_nus_fill(m_data, &m_data_length); //< Cache the first data segment to be sent
+
+                err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**START**", 9);     //< Start indicator
+                APP_ERROR_CHECK(err_code);
+
+                break;
+        }
+    }
 }
 
 /**@brief Function for updating battery level.
@@ -148,21 +178,16 @@ static void on_ble_evt(ble_evt_t *p_ble_evt)
             /** @note: Remember to clear connection handle.
                         Otherwise, the chip cannot be waken up after entering sleep mode!*/
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
+            set_sys_state(SYS_DATA_RECORDING);
 
-            advertising_start();
+            //advertising_start();
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
             if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
             {
-                nrf_gpio_pin_clear(ADVERTISING_LED_PIN_NO);
-                nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
-
                 // Stop advertising if not connected in limited time
                 set_sys_state(SYS_DATA_RECORDING);
-
-                // Go to system-off mode (this function will not return; wakeup will cause a reset)
-                //system_off_mode();
             }
             break;
 
@@ -173,6 +198,10 @@ static void on_ble_evt(ble_evt_t *p_ble_evt)
                                                  BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
                 APP_ERROR_CHECK(err_code);
             }
+            break;
+            
+        case BLE_EVT_TX_COMPLETE:
+            if (m_file_in_transit) ble_nus_data_transfer();
             break;
 
         default:
@@ -511,7 +540,7 @@ void advertising_start(void)
     nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
     nrf_gpio_pin_clear(CONNECTED_LED_PIN_NO);
 
-}
+} 
 
 /**@brief Function for disconnecting BLE link.
  */
@@ -520,9 +549,51 @@ void ble_connection_disconnect(void)
     uint32_t err_code;
     if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
     {
-        err_code = sd_ble_gap_disconnect(m_conn_handle,
-                                         BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
         APP_ERROR_CHECK(err_code);
+        m_conn_handle = BLE_CONN_HANDLE_INVALID;
+    } else 
+    {
+        err_code = sd_ble_gap_adv_stop();
+        err_code = 0;                       //< Ignore error when not advertising
+        //APP_ERROR_CHECK(err_code);
     }
+    
 }
 
+/**@brief Send data through BLE UART service with maximum throughput. */
+void ble_nus_data_transfer(void)
+{
+    uint32_t        err_code;
+    
+    if (m_data_length == 0)    //< All data is sent.
+    {
+        m_file_in_transit = false;
+        err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**END**", 7);     //< End indicator
+        APP_ERROR_CHECK(err_code);
+        return;
+    }
+    
+    /** @note    Maximize BLE throughput
+      *          https://devzone.nordicsemi.com/question/1741/dealing-large-data-packets-through-ble/
+      */
+    for (;;)
+    {
+        err_code = ble_nus_send_string(&m_nus, m_data, m_data_length);
+        
+        if (err_code == BLE_ERROR_NO_TX_BUFFERS ||
+            err_code == NRF_ERROR_INVALID_STATE ||
+            err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+        {
+            break;
+        }
+        else if (err_code != NRF_SUCCESS)
+        {
+            APP_ERROR_CHECK(err_code);
+        }
+        
+        back_data_ble_nus_fill(m_data, &m_data_length);
+    }
+    
+    
+}
