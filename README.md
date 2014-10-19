@@ -1,4 +1,4 @@
-#Nordic Semiconductor nRF51822 Firmware for background data recording
+#Nordic Semiconductor nRF51822 Firmware for Background Data Recording
 
 ## Design Objective
 
