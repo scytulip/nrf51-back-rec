@@ -8,30 +8,30 @@ BLE Link could be temporarily enabled to transfer data.
 
 ## Functional Description
 
-### SLEEP MODE
-* After the first power cycle (the battery is replaced or the RESET button is pressed), both *LED0* and *LED1* are ON for a short time to initialize the firmware, and then turn OFF. System goes into *SLEEP MODE*.
+### Sleep Mode
+* After the first power cycle (the battery is replaced or the *RESET* button is pressed), both *LED0* and *LED1* are ON for a short time to initialize the firmware, and then turn OFF. System goes into the **Sleep Mode**.
 * Power OFF
-	* When the device is activated (not in the *SLEEP MODE*), pushing and holding *BUTTON 0* can put the device into the *SLEEP MODE*. Both *LED0* and *LED1* are ON if the button is recognized.
-	* When the device is activated (not in the *SLEEP MODE*), pushing and holding *BUTTON 1* can clear the FLASH memory and then put the device into the *SLEEP MODE*. Both *LED0* and *LED1* are ON if the button is recognized.
+	* When the device is activated (not in the **Sleep Mode**), pushing and holding *BUTTON 0* can put the device into the **Sleep Mode**. Both *LED0* and *LED1* are ON if the button is recognized.
+	* When the device is activated (not in the **Sleep Mode**), pushing and holding *BUTTON 1* can clear the data memory in the FLASH and then put the device into the **Sleep Mode**. Both *LED0* and *LED1* are ON if the button is recognized.
 
-### RECORDING MODE
-* Press *BUTTON 0* to activate the device. When activated, both of *LED0* and *LED1* may flash. The firmware is in *RECORDING MODE*.
+### Recording Mode
+* Press *BUTTON 0* to activate the device. When activated, both of *LED0* and *LED1* may flash. The firmware is in **Recording Mode**.
   * If only LED0 is flashing, data is being recorded.
-  * If both LED0 and LED1 are flashing alternatively, recording is not going on and the internal FLASH memory is full.
-* In the *RECORDING MODE*, click *BUTTON 0* to turn on *BLE DISCOVERY MODE*.
+  * If both LED0 and LED1 are flashing alternatively, recording is not going on and the data memory in the FLASH is full.
+* In the **Recording Mode**, click *BUTTON 0* to turn on the **BLE Discovery Mode**.
   
-### BLE DISCOVERY MODE
-* In the *BLE DISCOVERY MODE*, *LED0* keeps ON and *LED1* keeps OFF.
-  * If BLE is not connected in `APP_ADV_TIMEOUT_IN_SECONDS` seconds, the firmware will disable the BLE and goes back to *RECORDING MODE*.
-  * If BLE is connected, the firmware enters *BLE CONNECTED MODE*.
-* At any time in the *BLE DISCOVERY MODE*, click *BUTTON 0* to return back to the *RECORDING MODE*.
+### BLE Discovery Mode
+* In the **BLE Discovery Mode**, *LED0* keeps ON and *LED1* keeps OFF.
+  * If BLE is not connected in `APP_ADV_TIMEOUT_IN_SECONDS` seconds, the firmware will disable the BLE and goes back to **Recording Mode**.
+  * If BLE is connected, the firmware enters the **BLE Connected Mode**.
+* At any time in the **BLE Discovery Mode**, click *BUTTON 0* to return back to the **Recording Mode**.
   
-### BLE CONNECTED MODE
-* In the *BLE CONNECTED MODE*, *LED0* will go OFF and *LED1* keeps ON. Several BLE services can be accessed.
+### BLE Connected Mode
+* In the **BLE Connected Mode**, *LED0* will go OFF and *LED1* keeps ON. Several BLE services can be accessed.
   * By default, collected data is sent instantly through the BLE Heart Rate Monitor service (even it's temperature data) to be visualized on a central device. In this case, the background recording is still in progress.
   * If a file transfer command is received from the central, background recording will be stopped and the content of the data stored in the FLASH memory will be sent through Nordic BLE UART service. It takes some time to finish. After the transfer, the firmware will wait for a resume command to restart  background recording.
-  * If BLE is disconnected at any time, the firmware will go back to the *RECORDING MODE*.
-* At any time in the *BLE CONNECTED MODE*, click *BUTTON 0* to disconnect and return back to the *RECORDING MODE*.
+  * If BLE is disconnected at any time, the firmware will go back to the **Recording Mode**.
+* At any time in the **BLE Connected Mode**, click *BUTTON 0* to disconnect and return back to the **Recording Mode**.
 
 
 ## Firmware Information
