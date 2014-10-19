@@ -27,12 +27,12 @@
 
 
 // Global Variables
-static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
+static volatile uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
+static volatile bool                             m_file_in_transit;                          /**< Indicator of file (group data) in transit. */
 static ble_bas_t                        m_bas;                                      /**< Structure used to identify the battery service. */
 static ble_hrs_t                        m_dts;                                      /**< Structure used to report data instantly. */
 static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
 static dm_application_instance_t        m_app_handle;                               /**< Application identifier allocated by device manager. */
-static bool                             m_file_in_transit;                          /**< Indicator of file (group data) in transit. */
 static uint8_t                          m_data[BLE_NUS_MAX_DATA_LEN];               /**< Cached data to be transmitted. */
 static uint8_t                          m_data_length;                              /**< Cached data length. */
 

@@ -11,10 +11,10 @@
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 
-static uint32_t led_count;      /**< Timer event counter for blinky pattern. */
-static uint32_t button_count;   /**< Timer event counter for button function. */
-static bool wakeup_pushed;      /**< Is wakeup button (function button/power down) pushed? */
-static bool sendat_pushed;      /**< Is sendat button (send data/clear FLASH) pushed? */
+static volatile uint32_t led_count;      /**< Timer event counter for blinky pattern. */
+static volatile uint32_t button_count;   /**< Timer event counter for button function. */
+static volatile bool wakeup_pushed;      /**< Is wakeup button (function button/power down) pushed? */
+static volatile bool sendat_pushed;      /**< Is sendat button (send data/clear FLASH) pushed? */
 
 /*****************************************************************************
 * Event Handlers

@@ -15,7 +15,7 @@ struct __FILE
 };
 FILE __stdout = { UART_WIRE_OUT };      /**< File handle (output) for UART */
 
-static uint8_t uart_tx_busy = 0;  /**< indication to the state of UART TX module */
+static volatile uint8_t uart_tx_busy = 0;  /**< indication to the state of UART TX module */
 
 /************************************************************
  * Retarget printf

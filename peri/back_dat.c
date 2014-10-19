@@ -25,16 +25,16 @@
 
 
 
-static uint32_t             sys_state;                                                      /**< System function state. */
-static uint32_t             fsm_state = 0;                                                  /**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
+static volatile uint32_t             sys_state;                                                      /**< System function state. */
+static volatile uint32_t             fsm_state = 0;                                                  /**< State of the FSM, 0 - Start conversion, 1 - Report temp. */
 
-static uint8_t              ram_page[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));          /**< Ram pages for data & config to be saved in FLASH. */
-static uint32_t             m_cur_page;                                                      /**< Current page # for data & config. */
-static uint32_t             m_cur_data_idx;                                                  /**< Current index # for data & config. */
-static uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data & config */
-static uint32_t             m_ble_data_idx;                                                  /**< Index # (head pointer) for data & config to be transferred. */
-static uint32_t             m_ble_block_idx;                                                 /**< Block # of FLASH area to be transferred */
-static pstorage_handle_t    m_base_handle;                                                   /**< Identifier for allocated blocks' base address. */
+static uint8_t                       ram_page[2][BD_BLOCK_SIZE] __attribute__((aligned(4)));          /**< Ram pages for data & config to be saved in FLASH. */
+static volatile uint32_t             m_cur_page;                                                      /**< Current page # for data & config. */
+static volatile uint32_t             m_cur_data_idx;                                                  /**< Current index # for data & config. */
+static volatile uint32_t             m_cur_block_idx;                                                 /**< Current block # of FLASH area for saving current data & config */
+static volatile uint32_t             m_ble_data_idx;                                                  /**< Index # (head pointer) for data & config to be transferred. */
+static volatile uint32_t             m_ble_block_idx;                                                 /**< Block # of FLASH area to be transferred */
+static pstorage_handle_t             m_base_handle;                                                   /**< Identifier for allocated blocks' base address. */
 
 /*****************************************************************************
 * Utility Functions
