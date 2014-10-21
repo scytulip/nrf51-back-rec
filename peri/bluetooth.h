@@ -17,7 +17,7 @@
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
 #define DEVICE_NAME                     "BKG Record"                                /**< Name of device. Will be included in the advertising data. (CANNOT BE TOO LONG!)*/
-#define MANUFACTURER_NAME               "ResBand"                                   /**< Manufacturer. Will be passed to Device Information Service. */
+#define MANUFACTURER_NAME               "SCY"                                   /**< Manufacturer. Will be passed to Device Information Service. */
 
 // Advertising Parameters
 #define APP_ADV_INTERVAL                64                                          /**< The advertising interval (in units of 0.625 ms. This value corresponds to 40 ms). */
