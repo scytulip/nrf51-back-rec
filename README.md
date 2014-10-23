@@ -62,3 +62,6 @@ This demo version implements a MAXIM DS1621+ I2C interface temperature sensor as
 |  20   | I2C SDA    |
 |  21   | I2C SCL    |
 
+* Board Configuration
+![Board](https://raw.githubusercontent.com/scytulip/nrf51-back-rec/master/doc/image/2014-10-22%2019.54.52.jpg)
+
