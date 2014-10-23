@@ -33,7 +33,7 @@
 #define PSTORAGE_MIN_BLOCK_SIZE     0x0010                                                      /**< Minimum size of block that can be registered with the module. Should be configured based on system requirements, recommendation is not have this value to be at least size of word. */
 
 #define CODE_R1_BASE                0x16000                                                     /**< Code region 1 base address when the softdevice is enabled. */
-#define CODE_LENGTH                 0x0C000                                                     /**< Code size. (48KB is estimated) */
+#define CODE_LENGTH                 0x0A000                                                     /**< Code size. (40KB is estimated) */
 
 #define PSTORAGE_DATA_START_ADDR    (((CODE_R1_BASE + CODE_LENGTH)/PSTORAGE_FLASH_PAGE_SIZE + 1) \
                                      * PSTORAGE_FLASH_PAGE_SIZE)                                 /**< Start address for persistent data. */

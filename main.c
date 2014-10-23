@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 ResBand. All Rights Reserved. */
+/* Copyright (c) 2014 Congyin Shi. All Rights Reserved. */
 
 /** @file
  *
