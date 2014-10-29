@@ -46,6 +46,9 @@ static uint8_t                          m_data_length;                          
 void system_off_mode(void)
 {
     uint32_t err_code;
+    
+    nrf_gpio_pin_set(ADVERTISING_LED_PIN_NO);
+    nrf_gpio_pin_set(CONNECTED_LED_PIN_NO);
 
     back_data_preserve();
     wait_flash_op();
@@ -92,9 +95,11 @@ static void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
     {
         switch(p_data[0])
         {
+            /** Report Data **/
             case 'I':
                 set_sys_state(SYS_BLE_DATA_INSTANT);
                 break;
+            /** Transfer File **/
             case 'T':
                 set_sys_state(SYS_BLE_DATA_TRANSFER);
                 nrf_delay_ms(MAX_CONN_INTERVAL * 2);    //< Wait until all BLE operation is done.
@@ -106,7 +111,19 @@ static void nus_data_handler(ble_nus_t *p_nus, uint8_t *p_data, uint16_t length)
 
                 err_code = ble_nus_send_string(&m_nus, (uint8_t *) "**START**", 9);     //< Start indicator
                 APP_ERROR_CHECK(err_code);
-
+                break;
+            /** Clean & Shutdown (Long press Button 1) **/
+            case 'C':
+                ble_connection_disconnect();
+                glb_timers_stop();
+                back_data_clear_storage();
+                system_off_mode();
+                break;
+            /** Shutdown (Long press Button 0) **/
+            case 'S':
+                ble_connection_disconnect();
+                glb_timers_stop();
+                system_off_mode();
                 break;
         }
     }
