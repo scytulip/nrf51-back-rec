@@ -5,7 +5,11 @@
 #include "nrf_gpio.h"
 #include "softdevice_handler.h"
 
+#ifdef __USE_NOUSE
+
 #include "uart.h"
+
+
 
 #pragma import(__use_no_semihosting_swi)
 
@@ -138,4 +142,4 @@ void uart_init(void)
 
     NRF_UART0->TASKS_STARTTX = 1;
 }
-
+#endif

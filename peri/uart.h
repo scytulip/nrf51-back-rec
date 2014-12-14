@@ -14,32 +14,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define UART_DEBUG_ENABLE 1
-
-#define RX_PIN_NO       11
-#define TX_PIN_NO       9
-#define CTS_PIN_NO      10
-#define RTS_PIN_NO      8
-#define HW_FLOWCTRL     true
-
-enum
-{
-    UART_WIRE_OUT,
-    UART_BLE_OUT
-};
-
-int fputc(int c, FILE *f);  /**< Retarget fputc() */
-int ferror(FILE *f);        /**< Retarget ferror() */
-
-/** @brief Print a string to UART terminal */
-void uart_putstr(const uint8_t *str);
-
-/**@brief Function for initializing UART operation */
-void uart_init(void);
+//#define UART_DEBUG_ENABLE 1
 
 /** @brief UART debug assert */
 #ifdef UART_DEBUG_ENABLE
-#define DEBUG_ASSERT(STR) uart_putstr((uint8_t *) STR);
+//#define DEBUG_ASSERT(STR) uart_putstr((uint8_t *) STR);
+#define DEBUG_ASSERT(STR) printf("%s",(uint8_t *) STR);
 #else
 #define DEBUG_ASSERT(STR)
 #endif
@@ -49,6 +29,33 @@ void uart_init(void);
 #else
 #define DEBUG_PF(STR,...)
 #endif
+
+
+//#define RX_PIN_NO       11
+//#define TX_PIN_NO       9
+//#define CTS_PIN_NO      10
+//#define RTS_PIN_NO      8
+//#define HW_FLOWCTRL     true
+
+//enum
+//{
+//    UART_WIRE_OUT,
+//    UART_BLE_OUT
+//};
+
+//int fputc(int c, FILE *f);  /**< Retarget fputc() */
+//int ferror(FILE *f);        /**< Retarget ferror() */
+
+///** @brief Print a string to UART terminal */
+//void uart_putstr(const uint8_t *str);
+
+///**@brief Function for initializing UART operation */
+//void uart_init(void);
+
+//#ifdef UART_DEBUG_ENABLE
+//void uart_init(void);
+//#endif
+
 
 
 #endif

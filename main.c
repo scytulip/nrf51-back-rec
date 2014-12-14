@@ -129,7 +129,7 @@ int main(void)
     sd_power_reset_reason_get(&rst_reas);
 
     // Enable UART debug ability
-    uart_init();
+    //uart_init();
 
     // Initialize persistent storage modules.
     /** @note In `pstorage_init()`, swap area is erased. */
@@ -139,24 +139,24 @@ int main(void)
     device_manager_init();
     back_data_init();
 
+//    if (!(rst_reas & POWER_RESETREAS_SREQ_Msk))         // Disable first power cycle for debug purpose.
+//    {
+//        if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
+//        {
+//            /* Important! Clear reset reason register */
+//            sd_power_reset_reason_clr(
+//                POWER_RESETREAS_RESETPIN_Msk
+//            );
 
-    if (!(rst_reas & POWER_RESETREAS_SREQ_Msk))         // Disable first power cycle for debug purpose.
-    {
-        if (!rst_reas || (rst_reas & POWER_RESETREAS_RESETPIN_Msk))
-        {
-            /* Important! Clear reset reason register */
-            sd_power_reset_reason_clr(
-                POWER_RESETREAS_RESETPIN_Msk
-            );
+//            /* Clear all FLASH data. */
+//            //back_data_clear_storage();
 
-            /* Clear all FLASH data. */
-            //back_data_clear_storage();
+//            /* Shut down */
+//            system_off_mode();
 
-            /* Shut down */
-            system_off_mode();
+//        }
+//    }
 
-        }
-    }
     
     /* Peripherals Initialization */
     ble_stack_init();           // Enable BLE stack
