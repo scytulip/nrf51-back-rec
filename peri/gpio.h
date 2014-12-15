@@ -26,7 +26,7 @@ Is on when device has connected. */
 
 #define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50, APP_TIMER_PRESCALER)    /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
 #define BUTTON_LONGPRESS_DELAY          APP_TIMER_TICKS(2000, APP_TIMER_PRESCALER)    /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-#define APP_GPIOTE_MAX_USERS            1                                           /**< Maximum number of users of the GPIOTE handler. */
+#define APP_GPIOTE_MAX_USERS            2                                           /**< Maximum number of users of the GPIOTE handler. (app_button, app_uart)*/
 
 
 /**@brief Timer handler for blinky LED signal and button event */

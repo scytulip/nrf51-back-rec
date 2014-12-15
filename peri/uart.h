@@ -13,50 +13,32 @@
 #define CUSTOM_UART_H__
 #include <stdint.h>
 #include <stdio.h>
+#include "app_uart.h"
 
-//#define UART_DEBUG_ENABLE 1
+#define UART_IRQ_PRIORITY                       APP_IRQ_PRIORITY_LOW
+
+#define RX_PIN_NO       11
+#define TX_PIN_NO       9
+#define CTS_PIN_NO      10
+#define RTS_PIN_NO      8
+
+#define UART_DEBUG_ENABLE 1
 
 /** @brief UART debug assert */
 #ifdef UART_DEBUG_ENABLE
-//#define DEBUG_ASSERT(STR) uart_putstr((uint8_t *) STR);
+
 #define DEBUG_ASSERT(STR) printf("%s",(uint8_t *) STR);
-#else
-#define DEBUG_ASSERT(STR)
-#endif
-
-#ifdef UART_DEBUG_ENABLE
 #define DEBUG_PF(STR,...) printf(STR, __VA_ARGS__);
+
 #else
+
+#define DEBUG_ASSERT(STR)
 #define DEBUG_PF(STR,...)
+
 #endif
 
-
-//#define RX_PIN_NO       11
-//#define TX_PIN_NO       9
-//#define CTS_PIN_NO      10
-//#define RTS_PIN_NO      8
-//#define HW_FLOWCTRL     true
-
-//enum
-//{
-//    UART_WIRE_OUT,
-//    UART_BLE_OUT
-//};
-
-//int fputc(int c, FILE *f);  /**< Retarget fputc() */
-//int ferror(FILE *f);        /**< Retarget ferror() */
-
-///** @brief Print a string to UART terminal */
-//void uart_putstr(const uint8_t *str);
-
-///**@brief Function for initializing UART operation */
-//void uart_init(void);
-
-//#ifdef UART_DEBUG_ENABLE
-//void uart_init(void);
-//#endif
-
-
+/**@brief Function for initializing UART operation */
+void uart_init(void);
 
 #endif
 

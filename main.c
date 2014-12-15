@@ -127,9 +127,10 @@ int main(void)
     flagged, it indicates that the chip was reset from the on-chip reset generator. */
 
     sd_power_reset_reason_get(&rst_reas);
-
-    // Enable UART debug ability
-    //uart_init();
+    
+    // Enable UART debug ability. (app_uart needs GPIOTE).
+    gpiote_init();
+    uart_init();
 
     // Initialize persistent storage modules.
     /** @note In `pstorage_init()`, swap area is erased. */
@@ -159,11 +160,9 @@ int main(void)
 
     
     /* Peripherals Initialization */
-    ble_stack_init();           // Enable BLE stack
+    ble_stack_init();           //< Enable BLE stack
 
-    DEBUG_ASSERT("Initializing peripherals...\r\n");
     timers_init();
-    gpiote_init();
     buttons_init();
     adc_init();
     ds1621_init();
